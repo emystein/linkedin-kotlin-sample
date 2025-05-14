@@ -17,15 +17,3 @@ springBoot {
 application {
     mainClass.set('com.linkedIn.api.Example')
 }
-
-// Add bootRun task
-task bootRun(type: JavaExec) {
-    description = 'Runs the Spring Boot application'
-    group = 'application'
-
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'com.linkedIn.api.Example'
-
-    // Pass system properties to the java process
-    systemProperties System.properties
-}

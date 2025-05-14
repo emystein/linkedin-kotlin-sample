@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.5.2' apply false
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE' apply false
+    id 'org.springframework.boot' version '3.3.6' apply false
+    id 'io.spring.dependency-management' version '1.1.4' apply false
 }
 
 allprojects {
@@ -20,21 +20,21 @@ subprojects {
     apply plugin: 'application'
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     dependencies {
         // Common dependencies for all subprojects
         implementation 'org.springframework.boot:spring-boot-starter-web'
-        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.2.2.RELEASE'
-        implementation 'org.springframework:spring-core:5.3.13'
-        implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
-        implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
+        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+        implementation 'org.springframework:spring-core'
+        implementation 'com.fasterxml.jackson.core:jackson-databind'
+        implementation 'com.fasterxml.jackson.core:jackson-core'
 
-        developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.0'
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-        testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.0'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
     tasks.named('test') {

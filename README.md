@@ -13,18 +13,18 @@ The sample application contains the client and server component you can use to m
 
 The sample application uses the following development tools:
 
-* Spring Boot: Used as web server framework [<https://spring.io/projects/spring-boot>]
+* Spring Boot 3.3.6: Used as web server framework [<https://spring.io/projects/spring-boot>]
 * LinkedIn OAuth 2.0: user authorization and API authentication
-* Gradle 8: app building and management
-* Java: SE 8 or later versions are required for development
+* Gradle 8.12.1: app building and management
+* Java: SE 17 or later versions are required for development
 
 ## Prerequisites
 
 * Ensure that you have an application registered in [LinkedIn Developer Portal](https://developer.linkedin.com/).
 Once you have your application, note down the Client ID and Client Secret
 * Add <http://localhost:8080/login> to the Authorized Redirect URLs under the **Authentication** section
-* Java 8 or later installed on your system
-* Gradle 8 is included in this project via the Gradle wrapper, so no separate installation is required
+* Java 17 or later installed on your system
+* Gradle 8.12.1 is included in this project via the Gradle wrapper, so no separate installation is required
 
 ## Configure the application
 
@@ -94,12 +94,13 @@ cd client
 
 ## Gradle Migration
 
-This project has been migrated from Maven to Gradle 8. The migration includes:
+This project has been migrated from Maven to Gradle 8.12.1 and upgraded to Spring Boot 3.3.6. The changes include:
 
 1. Creation of Gradle build files for the root project and each module
-2. Configuration of Spring Boot plugin for both client and server modules
+2. Configuration of Spring Boot 3.3.6 plugin for both client and server modules
 3. Setup of Gradle wrapper version 8.12.1
-4. Maintaining the same dependency versions as the original Maven project
+4. Upgrade of Java compatibility to Java 17 (required for Spring Boot 3)
+5. Update of dependencies to versions compatible with Spring Boot 3.3.6
 
 To build the project with Gradle, use the provided Gradle wrapper:
 

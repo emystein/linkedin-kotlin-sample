@@ -37,13 +37,12 @@ import static com.linkedin.oauth.util.Constants.REQUEST_TOKEN_URL;
 @RestController
 public final class LinkedInOAuthController {
 
-    @Bean
-    public RestTemplate restTemplate(final RestTemplateBuilder builder) {
-        return builder.build();
-    }
-
     @Autowired
-    private RestTemplate restTemplate;
+    private RestTemplateBuilder restTemplateBuilder;
+
+    private RestTemplate getRestTemplate() {
+        return restTemplateBuilder.build();
+    }
 
 
     //Define all inputs in the property file
@@ -89,7 +88,7 @@ public final class LinkedInOAuthController {
                     new AccessToken()
             };
             HttpEntity request = service.getAccessToken3Legged(code);
-            String response = restTemplate.postForObject(REQUEST_TOKEN_URL, request, String.class);
+            String response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String.class);
             accessToken[0] = service.convertJsonTokenToPojo(response);
 
             prop.setProperty("token", accessToken[0].getAccessToken());
@@ -129,7 +128,7 @@ public final class LinkedInOAuthController {
         };
 
         HttpEntity request = service.getAccessToken2Legged();
-        String response = restTemplate.postForObject(REQUEST_TOKEN_URL, request, String.class);
+        String response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String.class);
         accessToken[0] = service.convertJsonTokenToPojo(response);
         prop.setProperty("token", accessToken[0].getAccessToken());
         token = accessToken[0].getAccessToken();
@@ -150,7 +149,7 @@ public final class LinkedInOAuthController {
     public String token_introspection() throws Exception {
         if (service != null) {
             HttpEntity request = service.introspectToken(token);
-            String response = restTemplate.postForObject(TOKEN_INTROSPECTION_URL, request, String.class);
+            String response = getRestTemplate().postForObject(TOKEN_INTROSPECTION_URL, request, String.class);
             logger.log(Level.INFO, "Token introspected. Details are {0}", response);
 
             return response;
@@ -171,7 +170,7 @@ public final class LinkedInOAuthController {
         String response = null;
         if (refresh_token != null) {
         HttpEntity request = service.getAccessTokenFromRefreshToken(refresh_token);
-        response = restTemplate.postForObject(REQUEST_TOKEN_URL, request, String.class);
+        response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String.class);
         logger.log(Level.INFO, "Used Refresh Token to generate a new access token successfully.");
         return response;
         } else {
@@ -190,7 +189,7 @@ public final class LinkedInOAuthController {
     public String profile() {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.USER_AGENT, USER_AGENT_OAUTH_VALUE);
-        return restTemplate.exchange(LI_ME_ENDPOINT + token, HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
+        return getRestTemplate().exchange(LI_ME_ENDPOINT + token, HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
     }
 
     private void loadProperty() throws IOException {
