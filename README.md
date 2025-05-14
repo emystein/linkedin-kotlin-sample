@@ -15,15 +15,16 @@ The sample application uses the following development tools:
 
 * Spring Boot: Used as web server framework [<https://spring.io/projects/spring-boot>]
 * LinkedIn OAuth 2.0: user authorization and API authentication
-* Maven: app building and management
-* Java: SE 7 or later versions are required for development
+* Gradle 8: app building and management
+* Java: SE 8 or later versions are required for development
 
 ## Prerequisites
 
 * Ensure that you have an application registered in [LinkedIn Developer Portal](https://developer.linkedin.com/).
 Once you have your application, note down the Client ID and Client Secret
 * Add <http://localhost:8080/login> to the Authorized Redirect URLs under the **Authentication** section
-* Configure the application build by installing MAVEN using [Installing Apache Maven](https://maven.apache.org/install.html)
+* Java 8 or later installed on your system
+* Gradle 8 is included in this project via the Gradle wrapper, so no separate installation is required
 
 ## Configure the application
 
@@ -53,28 +54,58 @@ Once you have your application, note down the Client ID and Client Secret
     client_url = <replace_with_client_url>
 
  3. Save the changes.
-  
+
 ## Start the application
 
 To start the server:
 
 1. Navigate to the server folder.
-2. Open the terminal and run the following command to install dependencies:
-`mvn install`
-3. Execute the following command to run the spring-boot server:
-`mvn spring-boot:run`
+2. Open the terminal and run the following command to build and run the spring-boot server:
+```
+./gradlew bootRun
+```
 
 > **Note:** The server will be running on <http://localhost:8080/>
 
 To start the client:
 
 1. Navigate to the client folder.
-2. Open the terminal and run the following command to install dependencies:
- `mvn install`
-3. Execute the following command to run the spring-boot server:
-`mvn spring-boot:run`
+2. Open the terminal and run the following command to build and run the spring-boot client:
+```
+./gradlew bootRun
+```
 
 > **Note**: The client will be running on <http://localhost:8989/>
+
+Alternatively, you can build both modules from the root directory:
+
+```
+# Build both modules
+./gradlew build
+
+# Run the server
+cd server
+./gradlew bootRun
+
+# In another terminal, run the client
+cd client
+./gradlew bootRun
+```
+
+## Gradle Migration
+
+This project has been migrated from Maven to Gradle 8. The migration includes:
+
+1. Creation of Gradle build files for the root project and each module
+2. Configuration of Spring Boot plugin for both client and server modules
+3. Setup of Gradle wrapper version 8.12.1
+4. Maintaining the same dependency versions as the original Maven project
+
+To build the project with Gradle, use the provided Gradle wrapper:
+
+```
+./gradlew build
+```
 
 ## List of dependencies
 

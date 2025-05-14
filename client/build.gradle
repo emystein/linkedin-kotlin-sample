@@ -1,0 +1,31 @@
+description = 'LinkedIn OAuth Sample App Client'
+
+bootJar {
+    archiveBaseName = 'linkedin-oauth-sample-app-client'
+    archiveVersion = '0.0.1'
+}
+
+dependencies {
+    // Client-specific dependencies can be added here
+}
+
+// Set the main class for the application
+springBoot {
+    mainClass.set('com.linkedIn.api.Example')
+}
+
+application {
+    mainClass.set('com.linkedIn.api.Example')
+}
+
+// Add bootRun task
+task bootRun(type: JavaExec) {
+    description = 'Runs the Spring Boot application'
+    group = 'application'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.linkedIn.api.Example'
+
+    // Pass system properties to the java process
+    systemProperties System.properties
+}

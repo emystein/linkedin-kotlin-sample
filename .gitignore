@@ -10,3 +10,10 @@ bin/
 *.classpath
 *.project
 config.properties
+
+# Gradle specific
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+.gradletasknamecache
