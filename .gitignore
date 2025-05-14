@@ -12,8 +12,11 @@ bin/
 config.properties
 
 # Gradle specific
+gradle/
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
 .gradletasknamecache
+
+.idea
