@@ -17,7 +17,7 @@ The sample application uses the following development tools:
 * Kotlin 2.0.21: Modern JVM language with enhanced safety and conciseness
 * LinkedIn OAuth 2.0: user authorization and API authentication
 * Gradle 8.12.1: app building and management
-* Java/Kotlin: SE 17 or later versions are required for development
+* Amazon Corretto JDK 21.0.6: Required for development and runtime
 
 ## Prerequisites
 

@@ -24,21 +24,22 @@ subprojects {
     apply plugin: 'org.jetbrains.kotlin.plugin.spring'
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
 
     compileKotlin {
         kotlinOptions {
             freeCompilerArgs = ['-Xjsr305=strict']
-            jvmTarget = '17'
+            jvmTarget = JavaVersion.VERSION_21.toString()
         }
     }
 
     compileTestKotlin {
         kotlinOptions {
             freeCompilerArgs = ['-Xjsr305=strict']
-            jvmTarget = '17'
+            jvmTarget = JavaVersion.VERSION_21.toString()
         }
     }
 
