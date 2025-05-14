@@ -82,7 +82,9 @@ class LinkedInOAuthController {
             val accessToken = arrayOf(AccessToken())
             val request = service.getAccessToken3Legged(code)
             val response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String::class.java)
-            accessToken[0] = service.convertJsonTokenToPojo(response)
+            if (response != null) {
+                accessToken[0] = service.convertJsonTokenToPojo(response)
+            }
 
             prop.setProperty("token", accessToken[0].accessToken)
             token = accessToken[0].accessToken
@@ -120,9 +122,11 @@ class LinkedInOAuthController {
 
         val request = service.getAccessToken2Legged()
         val response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String::class.java)
-        accessToken[0] = service.convertJsonTokenToPojo(response)
-        prop.setProperty("token", accessToken[0].accessToken)
-        token = accessToken[0].accessToken
+        if (response != null) {
+            accessToken[0] = service.convertJsonTokenToPojo(response)
+            prop.setProperty("token", accessToken[0].accessToken)
+            token = accessToken[0].accessToken
+        }
 
         logger.log(Level.INFO, "Generated Access token.")
 
@@ -139,7 +143,7 @@ class LinkedInOAuthController {
     @Throws(Exception::class)
     fun token_introspection(): String {
         return if (::service.isInitialized) {
-            val request = service.introspectToken(token)
+            val request = service.introspectToken(token ?: "")
             val response = getRestTemplate().postForObject(TOKEN_INTROSPECTION_URL, request, String::class.java)
             logger.log(Level.INFO, "Token introspected. Details are {0}", response)
             response ?: ""
@@ -158,7 +162,8 @@ class LinkedInOAuthController {
     fun refresh_token(): String? {
         var response: String? = null
         if (refresh_token != null) {
-            val request = service.getAccessTokenFromRefreshToken(refresh_token)
+            val refreshTokenCopy = refresh_token ?: ""
+            val request = service.getAccessTokenFromRefreshToken(refreshTokenCopy)
             response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String::class.java)
             logger.log(Level.INFO, "Used Refresh Token to generate a new access token successfully.")
             return response
