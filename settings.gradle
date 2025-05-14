@@ -1,2 +1,2 @@
-rootProject.name = 'linkedin-java-sample'
+rootProject.name = 'linkedin-kotlin-sample'
 include 'client', 'server'
