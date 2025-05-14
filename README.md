@@ -14,9 +14,10 @@ The sample application contains the client and server component you can use to m
 The sample application uses the following development tools:
 
 * Spring Boot 3.3.6: Used as web server framework [<https://spring.io/projects/spring-boot>]
+* Kotlin 2.0.21: Modern JVM language with enhanced safety and conciseness
 * LinkedIn OAuth 2.0: user authorization and API authentication
 * Gradle 8.12.1: app building and management
-* Java: SE 17 or later versions are required for development
+* Java/Kotlin: SE 17 or later versions are required for development
 
 ## Prerequisites
 
@@ -94,13 +95,15 @@ cd client
 
 ## Gradle Migration
 
-This project has been migrated from Maven to Gradle 8.12.1 and upgraded to Spring Boot 3.3.6. The changes include:
+This project has been migrated from Maven to Gradle 8.12.1, upgraded to Spring Boot 3.3.6, and ported to Kotlin 2.0.21. The changes include:
 
 1. Creation of Gradle build files for the root project and each module
 2. Configuration of Spring Boot 3.3.6 plugin for both client and server modules
 3. Setup of Gradle wrapper version 8.12.1
 4. Upgrade of Java compatibility to Java 17 (required for Spring Boot 3)
 5. Update of dependencies to versions compatible with Spring Boot 3.3.6
+6. Conversion of Java classes to Kotlin 2.0.21
+7. Addition of Kotlin-specific plugins and dependencies
 
 To build the project with Gradle, use the provided Gradle wrapper:
 
