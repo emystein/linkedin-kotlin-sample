@@ -196,6 +196,85 @@ class LinkedInOAuthController {
         return token ?: ""
     }
 
+    /**
+     * Get member connections using the Member Data Portability API
+     *
+     * @return Member connections data in JSON format
+     */
+    @RequestMapping(value = ["/memberConnections"])
+    fun memberConnections(): String {
+        if (token == null) {
+            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+        }
+
+        val headers = HttpHeaders()
+        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        headers.set("LinkedIn-Version", "202312") // Required version header
+        headers.set(HttpHeaders.CONTENT_TYPE, "application/json")
+
+        try {
+            // Query the Member Snapshot API for CONNECTIONS domain
+            val snapshotUrl = "https://api.linkedin.com/rest/memberSnapshotData?q=criteria&domain=CONNECTIONS"
+
+            val response = getRestTemplate().exchange(
+                snapshotUrl,
+                HttpMethod.GET,
+                HttpEntity<Any>(headers),
+                String::class.java
+            ).body ?: ""
+
+            if (response.isEmpty()) {
+                return "{\"error\": \"Empty response from Member Snapshot API\"}"
+            }
+
+            // Check if we need to handle pagination
+            var allData = response
+            var nextPageUrl = extractNextPageUrl(response)
+
+            // Process up to 10 pages of data to avoid infinite loops
+            var pageCount = 1
+            val maxPages = 10
+
+            while (nextPageUrl.isNotEmpty() && pageCount < maxPages) {
+                val fullNextPageUrl = "https://api.linkedin.com$nextPageUrl"
+
+                val nextPageResponse = getRestTemplate().exchange(
+                    fullNextPageUrl,
+                    HttpMethod.GET,
+                    HttpEntity<Any>(headers),
+                    String::class.java
+                ).body ?: ""
+
+                if (nextPageResponse.isEmpty()) {
+                    break
+                }
+
+                // Combine the data (in a real implementation, you would merge the JSON properly)
+                allData += "\n--- Page ${pageCount + 1} ---\n$nextPageResponse"
+
+                // Get the next page URL
+                nextPageUrl = extractNextPageUrl(nextPageResponse)
+                pageCount++
+            }
+
+            return allData
+
+        } catch (e: Exception) {
+            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
+        }
+    }
+
+    /**
+     * Extract the next page URL from the response if it exists
+     */
+    private fun extractNextPageUrl(response: String): String {
+        // Simple regex to extract the next page URL from the JSON response
+        val regex = "\"rel\":\\s*\"next\",\\s*\"href\":\\s*\"([^\"]+)\"".toRegex()
+        val matchResult = regex.find(response)
+        return matchResult?.groupValues?.getOrNull(1)?.replace("\\", "") ?: ""
+    }
+
     @Throws(IOException::class)
     private fun loadProperty() {
         val inputStream: InputStream? = LinkedInOAuthController::class.java.classLoader.getResourceAsStream(propFileName)

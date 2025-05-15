@@ -3,12 +3,15 @@ package com.linkedIn.api
 import com.linkedIn.api.ClientConstants.CASE_FIND_AD_ACCOUNTS
 import com.linkedIn.api.ClientConstants.CASE_GET_USER_ORG_ROLES
 import com.linkedIn.api.ClientConstants.CASE_TOKEN_INTROSPECTION
+import com.linkedIn.api.ClientConstants.CASE_GET_MEMBER_CONNECTIONS
 import com.linkedIn.api.ClientConstants.DEFAULT_MESSAGE
 import com.linkedIn.api.ClientConstants.FIND_AD_ACCOUNTS_ENDPOINT
 import com.linkedIn.api.ClientConstants.FIND_AD_ACCOUNTS_MESSAGE
 import com.linkedIn.api.ClientConstants.FIND_USER_ROLES_MESSAGE
+import com.linkedIn.api.ClientConstants.MEMBER_CONNECTIONS_MESSAGE
 import com.linkedIn.api.ClientConstants.GENERIC_ERROR_MESSAGE
 import com.linkedIn.api.ClientConstants.GET_USER_ORG_ACCESS_ENDPOINT
+import com.linkedIn.api.ClientConstants.MEMBER_CONNECTIONS_ENDPOINT
 import com.linkedIn.api.ClientConstants.LMS_PAGE
 import com.linkedIn.api.ClientConstants.THREE_LEGGED_TOKEN_GEN_ENDPOINT
 import com.linkedIn.api.ClientConstants.TOKEN_EXISTS_MESSAGE
@@ -128,6 +131,16 @@ class LinkedInMarketingController {
                     if (map.containsKey("elements")) {
                         response = FIND_USER_ROLES_MESSAGE + response
                     }
+                    shouldFetchToken = true
+                } catch (e: Exception) {
+                    logger.log(Level.SEVERE, e.message, e)
+                    response = GENERIC_ERROR_MESSAGE
+                }
+            }
+            CASE_GET_MEMBER_CONNECTIONS -> {
+                try {
+                    response = lmsTemplate.getForObject(SERVER_URL + MEMBER_CONNECTIONS_ENDPOINT, String::class.java)!!
+                    response = MEMBER_CONNECTIONS_MESSAGE + response
                     shouldFetchToken = true
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
