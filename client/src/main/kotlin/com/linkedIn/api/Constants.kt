@@ -8,6 +8,7 @@ object ClientConstants {
     const val THREE_LEGGED_TOKEN_GEN_ENDPOINT = "login"
     const val TWO_LEGGED_TOKEN_GEN_ENDPOINT = "twoLeggedAuth"
     const val USE_REFRESH_TOKEN_ENDPOINT = "refreshToken"
+    const val GET_TOKEN_ENDPOINT = "getToken"
     const val FIND_AD_ACCOUNTS_ENDPOINT = "findAdAccounts"
     const val GET_USER_ORG_ACCESS_ENDPOINT = "getUserOrgAccess"
     const val PROFILE_ENDPOINT = "profile"

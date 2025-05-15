@@ -22,6 +22,7 @@ import com.linkedIn.api.ClientConstants.TOKEN_INTROSPECTION_ENDPOINT
 import com.linkedIn.api.ClientConstants.TWO_LEGGED_TOKEN_GEN_ENDPOINT
 import com.linkedIn.api.ClientConstants.TWO_LEGGED_TOKEN_GEN_SUCCESS_MESSAGE
 import com.linkedIn.api.ClientConstants.USE_REFRESH_TOKEN_ENDPOINT
+import com.linkedIn.api.ClientConstants.GET_TOKEN_ENDPOINT
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
@@ -63,6 +64,7 @@ class MainController {
         var action = "Start with LinkedIn's OAuth API operations..."
         var response = ""
         var output = ""
+        var token = ""
         try {
             response = restTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
             logger.log(Level.INFO, "Validating if a token is already in session. Response from token introspection end point is: {0}", response)
@@ -70,6 +72,14 @@ class MainController {
             if (!response.lowercase().contains("error")) {
                 action = TOKEN_EXISTS_MESSAGE
                 output = TOKEN_EXISTS_MESSAGE
+
+                // Get the token if it exists
+                try {
+                    token = restTemplate.getForObject(SERVER_URL + GET_TOKEN_ENDPOINT, String::class.java) ?: ""
+                    logger.log(Level.INFO, "Retrieved token: {0}", token)
+                } catch (e: Exception) {
+                    logger.log(Level.SEVERE, "Error retrieving token: {0}", e.message)
+                }
             }
         } catch (e: Exception) {
             logger.log(Level.SEVERE, e.message, e)
@@ -78,8 +88,9 @@ class MainController {
         model.addAttribute("auth_url", SERVER_URL + THREE_LEGGED_TOKEN_GEN_ENDPOINT)
         model.addAttribute("output", output)
         model.addAttribute("action", action)
+        model.addAttribute("token", token)
 
-        logger.log(Level.INFO, "Completed execution for rendering OAuth page. The model values are output: {0},action: {1}.", arrayOf(output, action))
+        logger.log(Level.INFO, "Completed execution for rendering OAuth page. The model values are output: {0}, action: {1}, token: {2}.", arrayOf(output, action, token))
         return OAUTH_PAGE
     }
 
@@ -94,6 +105,8 @@ class MainController {
     fun postBody(@RequestBody data: String, model: Model): String {
         var response = ""
         var action = ""
+        var token = ""
+        var shouldFetchToken = false
 
         logger.log(Level.INFO, "Handling on click of marketing page buttons. Button clicked is {0}", data)
 
@@ -103,6 +116,7 @@ class MainController {
                 try {
                     restTemplate.getForObject(SERVER_URL + TWO_LEGGED_TOKEN_GEN_ENDPOINT, String::class.java)
                     response = TWO_LEGGED_TOKEN_GEN_SUCCESS_MESSAGE
+                    shouldFetchToken = true
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
                     response = GENERIC_ERROR_MESSAGE
@@ -112,6 +126,7 @@ class MainController {
                 action = ACTION_GET_PROFILE
                 try {
                     response = restTemplate.getForObject(SERVER_URL + PROFILE_ENDPOINT, String::class.java)!!
+                    shouldFetchToken = true
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
                     response = GENERIC_ERROR_MESSAGE
@@ -126,6 +141,9 @@ class MainController {
                     } else {
                         REFRESH_TOKEN_MESSAGE
                     }
+                    if (tempResponse != null) {
+                        shouldFetchToken = true
+                    }
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
                     response = GENERIC_ERROR_MESSAGE
@@ -135,6 +153,7 @@ class MainController {
                 action = ACTION_TOKEN_INTROSPECTION
                 try {
                     response = restTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
+                    shouldFetchToken = true
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
                     response = GENERIC_ERROR_MESSAGE
@@ -142,11 +161,22 @@ class MainController {
             }
         }
 
+        // Fetch the token if needed
+        if (shouldFetchToken) {
+            try {
+                token = restTemplate.getForObject(SERVER_URL + GET_TOKEN_ENDPOINT, String::class.java) ?: ""
+                logger.log(Level.INFO, "Retrieved token: {0}", token)
+            } catch (e: Exception) {
+                logger.log(Level.SEVERE, "Error retrieving token: {0}", e.message)
+            }
+        }
+
         model.addAttribute("output", response)
         model.addAttribute("auth_url", SERVER_URL + THREE_LEGGED_TOKEN_GEN_ENDPOINT)
         model.addAttribute("action", action)
+        model.addAttribute("token", token)
 
-        logger.log(Level.INFO, "Completed execution on button click. The output is {0}", response)
+        logger.log(Level.INFO, "Completed execution on button click. The output is {0}, token: {1}", arrayOf(response, token))
         return OAUTH_PAGE
     }
 

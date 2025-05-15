@@ -13,6 +13,7 @@ import com.linkedIn.api.ClientConstants.LMS_PAGE
 import com.linkedIn.api.ClientConstants.THREE_LEGGED_TOKEN_GEN_ENDPOINT
 import com.linkedIn.api.ClientConstants.TOKEN_EXISTS_MESSAGE
 import com.linkedIn.api.ClientConstants.TOKEN_INTROSPECTION_ENDPOINT
+import com.linkedIn.api.ClientConstants.GET_TOKEN_ENDPOINT
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -51,6 +52,7 @@ class LinkedInMarketingController {
         var action = "Start with LinkedIn's Marketing API operations..."
         var response = ""
         var output = ""
+        var token = ""
         try {
             response = lmsTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
             logger.log(Level.INFO, "Validating if a token is already in session. Response from token introspection end point is: {0}", response)
@@ -58,6 +60,14 @@ class LinkedInMarketingController {
             if (!response.lowercase().contains("error")) {
                 action = TOKEN_EXISTS_MESSAGE
                 output = TOKEN_EXISTS_MESSAGE
+
+                // Get the token if it exists
+                try {
+                    token = lmsTemplate.getForObject(SERVER_URL + GET_TOKEN_ENDPOINT, String::class.java) ?: ""
+                    logger.log(Level.INFO, "Retrieved token: {0}", token)
+                } catch (e: Exception) {
+                    logger.log(Level.SEVERE, "Error retrieving token: {0}", e.message)
+                }
             }
         } catch (e: Exception) {
             logger.log(Level.SEVERE, e.message, e)
@@ -66,8 +76,9 @@ class LinkedInMarketingController {
         model.addAttribute("auth_url", SERVER_URL + THREE_LEGGED_TOKEN_GEN_ENDPOINT)
         model.addAttribute("output", output)
         model.addAttribute("action", action)
+        model.addAttribute("token", token)
 
-        logger.log(Level.INFO, "Completed execution for rendering Marketing page. The model values are output: {0},action: {1}.", arrayOf(output, action))
+        logger.log(Level.INFO, "Completed execution for rendering Marketing page. The model values are output: {0}, action: {1}, token: {2}.", arrayOf(output, action, token))
         return LMS_PAGE
     }
 
@@ -82,6 +93,8 @@ class LinkedInMarketingController {
     fun postBody(@RequestBody data: String, model: Model): String {
         var response = ""
         var action = ""
+        var token = ""
+        var shouldFetchToken = false
 
         logger.log(Level.INFO, "Handling on click of marketing page buttons. Button clicked is {0}", data)
 
@@ -89,6 +102,7 @@ class LinkedInMarketingController {
             CASE_TOKEN_INTROSPECTION -> {
                 try {
                     response = lmsTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
+                    shouldFetchToken = true
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
                     response = GENERIC_ERROR_MESSAGE
@@ -101,6 +115,7 @@ class LinkedInMarketingController {
                     if (map.containsKey("elements")) {
                         response = FIND_AD_ACCOUNTS_MESSAGE + response
                     }
+                    shouldFetchToken = true
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
                     response = GENERIC_ERROR_MESSAGE
@@ -113,6 +128,7 @@ class LinkedInMarketingController {
                     if (map.containsKey("elements")) {
                         response = FIND_USER_ROLES_MESSAGE + response
                     }
+                    shouldFetchToken = true
                 } catch (e: Exception) {
                     logger.log(Level.SEVERE, e.message, e)
                     response = GENERIC_ERROR_MESSAGE
@@ -123,11 +139,22 @@ class LinkedInMarketingController {
             }
         }
 
+        // Fetch the token if needed
+        if (shouldFetchToken) {
+            try {
+                token = lmsTemplate.getForObject(SERVER_URL + GET_TOKEN_ENDPOINT, String::class.java) ?: ""
+                logger.log(Level.INFO, "Retrieved token: {0}", token)
+            } catch (e: Exception) {
+                logger.log(Level.SEVERE, "Error retrieving token: {0}", e.message)
+            }
+        }
+
         model.addAttribute("output", response)
         model.addAttribute("auth_url", SERVER_URL + THREE_LEGGED_TOKEN_GEN_ENDPOINT)
         model.addAttribute("action", action)
+        model.addAttribute("token", token)
 
-        logger.log(Level.INFO, "Completed execution on button click. The output is {0}", response)
+        logger.log(Level.INFO, "Completed execution on button click. The output is {0}, token: {1}", arrayOf(response, token))
         return LMS_PAGE
     }
 }

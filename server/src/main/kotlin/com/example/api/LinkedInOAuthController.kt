@@ -186,6 +186,16 @@ class LinkedInOAuthController {
         return getRestTemplate().exchange(endpoint + token, HttpMethod.GET, HttpEntity<Any>(headers), String::class.java).body ?: ""
     }
 
+    /**
+     * Get the current access token
+     *
+     * @return The current access token or empty string if none exists
+     */
+    @RequestMapping(value = ["/getToken"])
+    fun getToken(): String {
+        return token ?: ""
+    }
+
     @Throws(IOException::class)
     private fun loadProperty() {
         val inputStream: InputStream? = LinkedInOAuthController::class.java.classLoader.getResourceAsStream(propFileName)
