@@ -1,32 +1,33 @@
 package com.linkedIn.api
 
 import com.linkedIn.api.ClientConstants.ACTION_2_LEGGED_TOKEN_GEN
+import com.linkedIn.api.ClientConstants.ACTION_CREATE_POST
+import com.linkedIn.api.ClientConstants.ACTION_GET_MEMBER_CONNECTIONS
+import com.linkedIn.api.ClientConstants.ACTION_GET_ORGANIZATION_URNS
+import com.linkedIn.api.ClientConstants.ACTION_GET_PERSON_URN
 import com.linkedIn.api.ClientConstants.ACTION_GET_PROFILE
 import com.linkedIn.api.ClientConstants.ACTION_TOKEN_INTROSPECTION
 import com.linkedIn.api.ClientConstants.ACTION_USE_REFRESH_TOKEN
-import com.linkedIn.api.ClientConstants.ACTION_GET_MEMBER_CONNECTIONS
-import com.linkedIn.api.ClientConstants.CASE_GET_PROFILE
-import com.linkedIn.api.ClientConstants.CASE_TOKEN_INTROSPECTION
-import com.linkedIn.api.ClientConstants.CASE_TWO_LEGGED_TOKEN_GEN
-import com.linkedIn.api.ClientConstants.CASE_USE_REFRESH_TOKEN
-import com.linkedIn.api.ClientConstants.CASE_GET_MEMBER_CONNECTIONS
-import com.linkedIn.api.ClientConstants.DEFAULT_MESSAGE
-import com.linkedIn.api.ClientConstants.FIND_AD_ACCOUNTS_MESSAGE
-import com.linkedIn.api.ClientConstants.FIND_USER_ROLES_MESSAGE
-import com.linkedIn.api.ClientConstants.MEMBER_CONNECTIONS_MESSAGE
+import com.linkedIn.api.ClientConstants.CREATE_POST_ENDPOINT
+import com.linkedIn.api.ClientConstants.CREATE_POST_SUCCESS_MESSAGE
 import com.linkedIn.api.ClientConstants.GENERIC_ERROR_MESSAGE
+import com.linkedIn.api.ClientConstants.GET_ORGANIZATION_URNS_ENDPOINT
+import com.linkedIn.api.ClientConstants.GET_PERSON_URN_ENDPOINT
+import com.linkedIn.api.ClientConstants.GET_TOKEN_ENDPOINT
+import com.linkedIn.api.ClientConstants.MEMBER_CONNECTIONS_ENDPOINT
+import com.linkedIn.api.ClientConstants.MEMBER_CONNECTIONS_MESSAGE
 import com.linkedIn.api.ClientConstants.OAUTH_PAGE
+import com.linkedIn.api.ClientConstants.ORGANIZATION_URNS_MESSAGE
+import com.linkedIn.api.ClientConstants.PERSON_URN_MESSAGE
 import com.linkedIn.api.ClientConstants.PROFILE_ENDPOINT
 import com.linkedIn.api.ClientConstants.REFRESH_TOKEN_ERROR_MESSAGE
 import com.linkedIn.api.ClientConstants.REFRESH_TOKEN_MESSAGE
-import com.linkedIn.api.ClientConstants.MEMBER_CONNECTIONS_ENDPOINT
 import com.linkedIn.api.ClientConstants.THREE_LEGGED_TOKEN_GEN_ENDPOINT
 import com.linkedIn.api.ClientConstants.TOKEN_EXISTS_MESSAGE
 import com.linkedIn.api.ClientConstants.TOKEN_INTROSPECTION_ENDPOINT
 import com.linkedIn.api.ClientConstants.TWO_LEGGED_TOKEN_GEN_ENDPOINT
 import com.linkedIn.api.ClientConstants.TWO_LEGGED_TOKEN_GEN_SUCCESS_MESSAGE
 import com.linkedIn.api.ClientConstants.USE_REFRESH_TOKEN_ENDPOINT
-import com.linkedIn.api.ClientConstants.GET_TOKEN_ENDPOINT
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
@@ -34,7 +35,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.client.RestTemplate
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -105,76 +106,17 @@ class MainController {
      * @param model Spring Boot Model
      * @return a page to render on UI
      */
-    @PostMapping(path = ["/"], produces = ["application/json", "application/xml"], consumes = ["application/x-www-form-urlencoded"])
-    fun postBody(@RequestBody data: String, model: Model): String {
-        var response = ""
-        var action = ""
+    /**
+     * Helper method to prepare the model with common attributes and fetch token if needed
+     *
+     * @param model The Spring model to populate
+     * @param response The response to display
+     * @param action The action being performed
+     * @param shouldFetchToken Whether to fetch the token
+     * @return The token value
+     */
+    private fun prepareModel(model: Model, response: String, action: String, shouldFetchToken: Boolean): String {
         var token = ""
-        var shouldFetchToken = false
-
-        logger.log(Level.INFO, "Handling on click of marketing page buttons. Button clicked is {0}", data)
-
-        when (data) {
-            CASE_TWO_LEGGED_TOKEN_GEN -> {
-                action = ACTION_2_LEGGED_TOKEN_GEN
-                try {
-                    restTemplate.getForObject(SERVER_URL + TWO_LEGGED_TOKEN_GEN_ENDPOINT, String::class.java)
-                    response = TWO_LEGGED_TOKEN_GEN_SUCCESS_MESSAGE
-                    shouldFetchToken = true
-                } catch (e: Exception) {
-                    logger.log(Level.SEVERE, e.message, e)
-                    response = GENERIC_ERROR_MESSAGE
-                }
-            }
-            CASE_GET_PROFILE -> {
-                action = ACTION_GET_PROFILE
-                try {
-                    response = restTemplate.getForObject(SERVER_URL + PROFILE_ENDPOINT, String::class.java)!!
-                    shouldFetchToken = true
-                } catch (e: Exception) {
-                    logger.log(Level.SEVERE, e.message, e)
-                    response = GENERIC_ERROR_MESSAGE
-                }
-            }
-            CASE_USE_REFRESH_TOKEN -> {
-                action = ACTION_USE_REFRESH_TOKEN
-                try {
-                    val tempResponse = restTemplate.getForObject(SERVER_URL + USE_REFRESH_TOKEN_ENDPOINT, String::class.java)
-                    response = if (tempResponse == null) {
-                        REFRESH_TOKEN_ERROR_MESSAGE
-                    } else {
-                        REFRESH_TOKEN_MESSAGE
-                    }
-                    if (tempResponse != null) {
-                        shouldFetchToken = true
-                    }
-                } catch (e: Exception) {
-                    logger.log(Level.SEVERE, e.message, e)
-                    response = GENERIC_ERROR_MESSAGE
-                }
-            }
-            CASE_GET_MEMBER_CONNECTIONS -> {
-                action = ACTION_GET_MEMBER_CONNECTIONS
-                try {
-                    response = restTemplate.getForObject(SERVER_URL + MEMBER_CONNECTIONS_ENDPOINT, String::class.java)!!
-                    response = MEMBER_CONNECTIONS_MESSAGE + response
-                    shouldFetchToken = true
-                } catch (e: Exception) {
-                    logger.log(Level.SEVERE, e.message, e)
-                    response = GENERIC_ERROR_MESSAGE
-                }
-            }
-            else -> {
-                action = ACTION_TOKEN_INTROSPECTION
-                try {
-                    response = restTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
-                    shouldFetchToken = true
-                } catch (e: Exception) {
-                    logger.log(Level.SEVERE, e.message, e)
-                    response = GENERIC_ERROR_MESSAGE
-                }
-            }
-        }
 
         // Fetch the token if needed
         if (shouldFetchToken) {
@@ -191,11 +133,224 @@ class MainController {
         model.addAttribute("action", action)
         model.addAttribute("token", token)
 
-        logger.log(Level.INFO, "Completed execution on button click. The output is {0}, token: {1}", arrayOf(response, token))
+        logger.log(Level.INFO, "Completed execution. The output is {0}, token: {1}", arrayOf(response, token))
+        return token
+    }
+
+    /**
+     * Handles the 2-legged OAuth token generation
+     *
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/twoLeggedAuth")
+    fun handleTwoLeggedAuth(model: Model): String {
+        logger.log(Level.INFO, "Handling 2-legged OAuth token generation")
+
+        var response = ""
+        val action = ACTION_2_LEGGED_TOKEN_GEN
+
+        try {
+            restTemplate.getForObject(SERVER_URL + TWO_LEGGED_TOKEN_GEN_ENDPOINT, String::class.java)
+            response = TWO_LEGGED_TOKEN_GEN_SUCCESS_MESSAGE
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, true)
+        return OAUTH_PAGE
+    }
+
+    /**
+     * Handles the profile retrieval
+     *
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/profile")
+    fun handleGetProfile(model: Model): String {
+        logger.log(Level.INFO, "Handling profile retrieval")
+
+        var response = ""
+        val action = ACTION_GET_PROFILE
+
+        try {
+            response = restTemplate.getForObject(SERVER_URL + PROFILE_ENDPOINT, String::class.java)!!
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, true)
+        return OAUTH_PAGE
+    }
+
+    /**
+     * Handles the refresh token operation
+     *
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/refreshToken")
+    fun handleRefreshToken(model: Model): String {
+        logger.log(Level.INFO, "Handling refresh token operation")
+
+        var response = ""
+        val action = ACTION_USE_REFRESH_TOKEN
+        var shouldFetchToken = false
+
+        try {
+            val tempResponse = restTemplate.getForObject(SERVER_URL + USE_REFRESH_TOKEN_ENDPOINT, String::class.java)
+            response = if (tempResponse == null) {
+                REFRESH_TOKEN_ERROR_MESSAGE
+            } else {
+                shouldFetchToken = true
+                REFRESH_TOKEN_MESSAGE
+            }
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, shouldFetchToken)
+        return OAUTH_PAGE
+    }
+
+    /**
+     * Handles the member connections retrieval
+     *
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/memberConnections")
+    fun handleGetMemberConnections(model: Model): String {
+        logger.log(Level.INFO, "Handling member connections retrieval")
+
+        var response = ""
+        val action = ACTION_GET_MEMBER_CONNECTIONS
+
+        try {
+            response = restTemplate.getForObject(SERVER_URL + MEMBER_CONNECTIONS_ENDPOINT, String::class.java)!!
+            response = MEMBER_CONNECTIONS_MESSAGE + response
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, true)
+        return OAUTH_PAGE
+    }
+
+    /**
+     * Handles the post creation
+     *
+     * @param postContent The content of the post
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/createPost")
+    fun handleCreatePost(@RequestParam("post_content", required = false) postContent: String?, model: Model): String {
+        logger.log(Level.INFO, "Handling post creation with content: {0}", postContent)
+
+        var response = ""
+        val action = ACTION_CREATE_POST
+
+        try {
+            if (!postContent.isNullOrBlank()) {
+                // Create a request with the post content
+                val createPostUrl = "$SERVER_URL$CREATE_POST_ENDPOINT?content=${java.net.URLEncoder.encode(postContent, "UTF-8")}"
+                response = restTemplate.getForObject(createPostUrl, String::class.java)!!
+                response = CREATE_POST_SUCCESS_MESSAGE + "\n" + response
+            } else {
+                response = "Error: Post content cannot be empty."
+            }
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, true)
+        return OAUTH_PAGE
+    }
+
+    /**
+     * Handles the person URN retrieval
+     *
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/getPersonUrn")
+    fun handleGetPersonUrn(model: Model): String {
+        logger.log(Level.INFO, "Handling person URN retrieval")
+
+        var response = ""
+        val action = ACTION_GET_PERSON_URN
+
+        try {
+            response = restTemplate.getForObject(SERVER_URL + GET_PERSON_URN_ENDPOINT, String::class.java)!!
+            response = PERSON_URN_MESSAGE + response
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, true)
+        return OAUTH_PAGE
+    }
+
+    /**
+     * Handles the organization URNs retrieval
+     *
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/getOrganizationUrns")
+    fun handleGetOrganizationUrns(model: Model): String {
+        logger.log(Level.INFO, "Handling organization URNs retrieval")
+
+        var response = ""
+        val action = ACTION_GET_ORGANIZATION_URNS
+
+        try {
+            response = restTemplate.getForObject(SERVER_URL + GET_ORGANIZATION_URNS_ENDPOINT, String::class.java)!!
+            response = ORGANIZATION_URNS_MESSAGE + response
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, true)
+        return OAUTH_PAGE
+    }
+
+    /**
+     * Handles the token introspection
+     *
+     * @param model Spring Boot Model
+     * @return a page to render on UI
+     */
+    @PostMapping("/tokenIntrospection")
+    fun handleTokenIntrospection(model: Model): String {
+        logger.log(Level.INFO, "Handling token introspection")
+
+        var response = ""
+        val action = ACTION_TOKEN_INTROSPECTION
+
+        try {
+            response = restTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, e.message, e)
+            response = GENERIC_ERROR_MESSAGE
+        }
+
+        prepareModel(model, response, action, true)
         return OAUTH_PAGE
     }
 
     companion object {
         val restTemplate = RestTemplate()
     }
+
+
 }

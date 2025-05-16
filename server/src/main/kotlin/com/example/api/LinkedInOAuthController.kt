@@ -275,6 +275,195 @@ class LinkedInOAuthController {
         return matchResult?.groupValues?.getOrNull(1)?.replace("\\", "") ?: ""
     }
 
+    /**
+     * Get the Person URN for the authenticated user
+     *
+     * @return The Person URN in the format urn:li:person:{id}
+     */
+    @RequestMapping(value = ["/getPersonUrn"])
+    fun getPersonUrn(): String {
+        if (token == null) {
+            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+        }
+
+        val headers = HttpHeaders()
+        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        headers.set("LinkedIn-Version", "202312")
+
+        try {
+            // Call the /me API to get basic profile information
+            val meApiUrl = "https://api.linkedin.com/v2/me"
+            val response = getRestTemplate().exchange(
+                meApiUrl,
+                HttpMethod.GET,
+                HttpEntity<Any>(headers),
+                String::class.java
+            ).body ?: ""
+
+            // Extract the ID from the response
+            val idRegex = "\"id\":\\s*\"([^\"]+)\"".toRegex()
+            val idMatch = idRegex.find(response)
+            val id = idMatch?.groupValues?.getOrNull(1) ?: ""
+
+            if (id.isNotEmpty()) {
+                val personUrn = "urn:li:person:$id"
+                return "{\"personUrn\": \"$personUrn\"}"
+            } else {
+                return "{\"error\": \"Could not extract ID from response: $response\"}"
+            }
+        } catch (e: Exception) {
+            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
+        }
+    }
+
+    /**
+     * Get the Organization URNs that the authenticated user has access to
+     *
+     * @return A list of Organization URNs in the format urn:li:organization:{id}
+     */
+    @RequestMapping(value = ["/getOrganizationUrns"])
+    fun getOrganizationUrns(): String {
+        if (token == null) {
+            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+        }
+
+        val headers = HttpHeaders()
+        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        headers.set("LinkedIn-Version", "202312")
+
+        try {
+            // Call the organizationAcls API to get organizations the user has access to
+            val organizationsUrl = "https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(organization~(id,localizedName)))"
+            val response = getRestTemplate().exchange(
+                organizationsUrl,
+                HttpMethod.GET,
+                HttpEntity<Any>(headers),
+                String::class.java
+            ).body ?: ""
+
+            return response
+        } catch (e: Exception) {
+            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
+        }
+    }
+
+    /**
+     * Create a text-only post on LinkedIn using the Posts API
+     * Automatically retrieves the current user's URN and uses it as the author
+     *
+     * @param content The text content of the post
+     * @return Response from the LinkedIn Posts API
+     */
+    @RequestMapping(value = ["/createPost"])
+    fun createPost(@RequestParam(required = false) content: String?): String {
+        if (token == null) {
+            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+        }
+
+        if (content.isNullOrBlank()) {
+            return "{\"error\": \"Post content cannot be empty.\"}"
+        }
+
+        val headers = HttpHeaders()
+        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        headers.set("X-Restli-Protocol-Version", "2.0.0")
+        headers.set("LinkedIn-Version", "202302") // Use the appropriate version
+        headers.set(HttpHeaders.CONTENT_TYPE, "application/json")
+
+        try {
+            // First, get the current user's URN
+            val personUrn = getCurrentUserUrn(headers)
+            if (personUrn.startsWith("{\"error\"")) {
+                return personUrn // Return the error message
+            }
+
+            // Create the post request body using the user's URN as the author
+            val requestBody = "{"
+                .plus("\"author\": \"$personUrn\",")
+                .plus("\"commentary\": \"$content\",")
+                .plus("\"visibility\": \"PUBLIC\",")
+                .plus("\"distribution\": {")
+                .plus("\"feedDistribution\": \"MAIN_FEED\",")
+                .plus("\"targetEntities\": [],")
+                .plus("\"thirdPartyDistributionChannels\": []")
+                .plus("},")
+                .plus("\"lifecycleState\": \"PUBLISHED\",")
+                .plus("\"isReshareDisabledByAuthor\": false")
+                .plus("}")
+
+            // Make the POST request to LinkedIn Posts API
+            val postsApiUrl = "https://api.linkedin.com/rest/posts"
+            val requestEntity = HttpEntity(requestBody, headers)
+
+            val response = getRestTemplate().exchange(
+                postsApiUrl,
+                HttpMethod.POST,
+                requestEntity,
+                String::class.java
+            )
+
+            // Check if the post was created successfully
+            if (response.statusCode.is2xxSuccessful) {
+                val postId = response.headers["x-restli-id"]?.firstOrNull() ?: "Unknown"
+                return "{\"success\": true, \"message\": \"Post created successfully as $personUrn\", \"postId\": \"$postId\"}"
+            } else {
+                return "{\"error\": \"Failed to create post. Status: ${response.statusCode}\"}"
+            }
+
+        } catch (e: Exception) {
+            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
+        }
+    }
+
+    /**
+     * Helper method to get the current user's URN
+     *
+     * @param headers The HTTP headers with authorization token
+     * @return The user's URN in the format urn:li:person:{id}
+     */
+    private fun getCurrentUserUrn(headers: HttpHeaders): String {
+        try {
+            // Ensure we have the LinkedIn-Version header
+            if (!headers.containsKey("LinkedIn-Version")) {
+                headers.set("LinkedIn-Version", "202302")
+            }
+
+            // Call the /me API to get basic profile information
+            val meApiUrl = "https://api.linkedin.com/v2/me"
+            logger.info("Making request to LinkedIn API: $meApiUrl")
+            logger.info("Headers: ${headers.toString()}")
+
+            val responseEntity = getRestTemplate().exchange(
+                meApiUrl,
+                HttpMethod.GET,
+                HttpEntity<Any>(headers),
+                String::class.java
+            )
+
+            logger.info("Response status: ${responseEntity.statusCode}")
+            val response = responseEntity.body ?: ""
+            logger.info("Response body: $response")
+
+            // Extract the ID from the response
+            val idRegex = "\"id\":\\s*\"([^\"]+)\"".toRegex()
+            val idMatch = idRegex.find(response)
+            val id = idMatch?.groupValues?.getOrNull(1) ?: ""
+
+            if (id.isNotEmpty()) {
+                return "urn:li:person:$id"
+            } else {
+                return "{\"error\": \"Could not extract user ID from response\"}"
+            }
+        } catch (e: Exception) {
+            logger.severe("Error retrieving user URN: ${e.message}")
+            e.printStackTrace()
+            return "{\"error\": \"Failed to retrieve user URN: ${e.message?.replace("\"", "\\\"")}\"}"
+        }
+    }
+
     @Throws(IOException::class)
     private fun loadProperty() {
         val inputStream: InputStream? = LinkedInOAuthController::class.java.classLoader.getResourceAsStream(propFileName)

@@ -10,20 +10,41 @@
     <h1 class="center">OAuth Sample Application</h1>
     <div class="row">
         <div class="col-md-6">
-            <form method="post">
             <h3>Client Application</h3>
             <p>This client application makes calls to the server component REST Endpoints</p>
             <h6><p th:text="${action}" /></h6>
                 <p>OAuth functions to generate access token in server component</p>
                 <a th:href="${auth_url}" target="_blank" class="btn-link three">3 Legged OAuth</a>
-                <input type="submit" name="two_legged_auth" class="btn-link" value="2 Legged OAuth" />
+                <form method="post" action="/twoLeggedAuth" style="display:inline;">
+                    <input type="submit" class="btn-link" value="2 Legged OAuth" />
+                </form>
                 <p>OAuth token calls</p>
-                <input type="submit" name="token_introspection" class="btn-link" value="Token Introspection" />
-                <input type="submit" name="refresh_token" class="btn-link" value="Use Refresh Token" />
+                <form method="post" action="/tokenIntrospection" style="display:inline;">
+                    <input type="submit" class="btn-link" value="Token Introspection" />
+                </form>
+                <form method="post" action="/refreshToken" style="display:inline;">
+                    <input type="submit" class="btn-link" value="Use Refresh Token" />
+                </form>
                 <p>Use access token stored in server to make REST calls</p>
-                <input type="submit" name="profile" class="btn-link" value="Get Profile" />
-                <input type="submit" name="member_connections" class="btn-link" value="Get Member Connections" />
-            </form>
+                <form method="post" action="/profile" style="display:inline;">
+                    <input type="submit" class="btn-link" value="Get Profile" />
+                </form>
+                <form method="post" action="/memberConnections" style="display:inline;">
+                    <input type="submit" class="btn-link" value="Get Member Connections" />
+                </form>
+                <form method="post" action="/getPersonUrn" style="display:inline;">
+                    <input type="submit" class="btn-link" value="Get Person URN" />
+                </form>
+                <form method="post" action="/getOrganizationUrns" style="display:inline;">
+                    <input type="submit" class="btn-link" value="Get Organization URNs" />
+                </form>
+                <p>Create LinkedIn Posts</p>
+                <form method="post" action="/createPost">
+                    <div class="post-area">
+                        <textarea id="post-content" name="post_content" class="post-content" placeholder="Enter your post text here..."></textarea>
+                        <input type="submit" class="btn-link" value="Create Post" />
+                    </div>
+                </form>
         </div>
         <div class="col-md-6">
             <h5>AUTH TOKEN</h5>
