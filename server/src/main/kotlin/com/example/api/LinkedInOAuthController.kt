@@ -174,16 +174,33 @@ class LinkedInOAuthController {
     }
 
     /**
-     * Make a Public profile request with LinkedIN API
+     * Make a Public profile request with LinkedIn API using the userinfo endpoint
+     * as described in the LinkedIn OpenID Connect documentation
+     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
      *
-     * @return Public profile of user
+     * @return Public profile of user including the 'sub' field
      */
     @RequestMapping(value = ["/profile"])
     fun profile(): String {
+        if (token == null) {
+            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+        }
+        
         val headers = HttpHeaders()
         headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
-        val endpoint = "https://api.linkedin.com/v2/userinfo?oauth2_access_token="
-        return getRestTemplate().exchange(endpoint + token, HttpMethod.GET, HttpEntity<Any>(headers), String::class.java).body ?: ""
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        
+        try {
+            val userinfoUrl = "https://api.linkedin.com/v2/userinfo"
+            return getRestTemplate().exchange(
+                userinfoUrl, 
+                HttpMethod.GET, 
+                HttpEntity<Any>(headers), 
+                String::class.java
+            ).body ?: ""
+        } catch (e: Exception) {
+            return "{\"error\": \"Failed to process profile data: ${e.message?.replace("\"", "\\\"")}\"}"
+        }
     }
 
     /**
@@ -276,44 +293,38 @@ class LinkedInOAuthController {
     }
 
     /**
-     * Get the Person URN for the authenticated user
+     * Get the Person URN for the authenticated user using the userinfo endpoint
+     * as described in the LinkedIn OpenID Connect documentation
+     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
      *
-     * @return The Person URN in the format urn:li:person:{id}
+     * This method reuses the profile() response to extract the 'sub' field
+     *
+     * @return The Person URN in the format urn:li:person:{sub}
      */
     @RequestMapping(value = ["/getPersonUrn"])
     fun getPersonUrn(): String {
-        if (token == null) {
-            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+        // Get the profile data from the profile() method
+        val profileResponse = profile()
+        
+        // Check if there was an error getting the profile
+        if (profileResponse.contains("\"error\":")) {
+            return profileResponse // Return the error message
         }
-
-        val headers = HttpHeaders()
-        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        headers.set("LinkedIn-Version", "202312")
-
+        
         try {
-            // Call the /me API to get basic profile information
-            val meApiUrl = "https://api.linkedin.com/v2/me"
-            val response = getRestTemplate().exchange(
-                meApiUrl,
-                HttpMethod.GET,
-                HttpEntity<Any>(headers),
-                String::class.java
-            ).body ?: ""
-
-            // Extract the ID from the response
-            val idRegex = "\"id\":\\s*\"([^\"]+)\"".toRegex()
-            val idMatch = idRegex.find(response)
-            val id = idMatch?.groupValues?.getOrNull(1) ?: ""
-
-            if (id.isNotEmpty()) {
-                val personUrn = "urn:li:person:$id"
+            // Extract the 'sub' field from the profile response
+            val subRegex = "\"sub\":\\s*\"([^\"]+)\"".toRegex()
+            val subMatch = subRegex.find(profileResponse)
+            val sub = subMatch?.groupValues?.getOrNull(1) ?: ""
+            
+            if (sub.isNotEmpty()) {
+                val personUrn = "urn:li:person:$sub"
                 return "{\"personUrn\": \"$personUrn\"}"
             } else {
-                return "{\"error\": \"Could not extract ID from response: $response\"}"
+                return "{\"error\": \"Could not extract 'sub' field from profile response: $profileResponse\"}"
             }
         } catch (e: Exception) {
-            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
+            return "{\"error\": \"Failed to process profile data: ${e.message?.replace("\"", "\\\"")}\"}"
         }
     }
 
@@ -370,7 +381,7 @@ class LinkedInOAuthController {
         headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
         headers.set("X-Restli-Protocol-Version", "2.0.0")
-        headers.set("LinkedIn-Version", "202302") // Use the appropriate version
+        headers.set("LinkedIn-Version", "202505") // Use the appropriate version
         headers.set(HttpHeaders.CONTENT_TYPE, "application/json")
 
         try {
@@ -419,10 +430,12 @@ class LinkedInOAuthController {
     }
 
     /**
-     * Helper method to get the current user's URN
+     * Helper method to get the current user's URN using the userinfo endpoint
+     * as described in the LinkedIn OpenID Connect documentation
+     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
      *
      * @param headers The HTTP headers with authorization token
-     * @return The user's URN in the format urn:li:person:{id}
+     * @return The user's URN in the format urn:li:person:{sub}
      */
     private fun getCurrentUserUrn(headers: HttpHeaders): String {
         try {
@@ -431,13 +444,13 @@ class LinkedInOAuthController {
                 headers.set("LinkedIn-Version", "202302")
             }
 
-            // Call the /me API to get basic profile information
-            val meApiUrl = "https://api.linkedin.com/v2/me"
-            logger.info("Making request to LinkedIn API: $meApiUrl")
+            // Call the userinfo endpoint to get user information
+            val userinfoUrl = "https://api.linkedin.com/v2/userinfo"
+            logger.info("Making request to LinkedIn userinfo API: $userinfoUrl")
             logger.info("Headers: ${headers.toString()}")
 
             val responseEntity = getRestTemplate().exchange(
-                meApiUrl,
+                userinfoUrl,
                 HttpMethod.GET,
                 HttpEntity<Any>(headers),
                 String::class.java
@@ -447,15 +460,15 @@ class LinkedInOAuthController {
             val response = responseEntity.body ?: ""
             logger.info("Response body: $response")
 
-            // Extract the ID from the response
-            val idRegex = "\"id\":\\s*\"([^\"]+)\"".toRegex()
-            val idMatch = idRegex.find(response)
-            val id = idMatch?.groupValues?.getOrNull(1) ?: ""
+            // Extract the 'sub' field from the response
+            val subRegex = "\"sub\":\\s*\"([^\"]+)\"".toRegex()
+            val subMatch = subRegex.find(response)
+            val sub = subMatch?.groupValues?.getOrNull(1) ?: ""
 
-            if (id.isNotEmpty()) {
-                return "urn:li:person:$id"
+            if (sub.isNotEmpty()) {
+                return "urn:li:person:$sub"
             } else {
-                return "{\"error\": \"Could not extract user ID from response\"}"
+                return "{\"error\": \"Could not extract 'sub' field from userinfo response\"}"
             }
         } catch (e: Exception) {
             logger.severe("Error retrieving user URN: ${e.message}")
