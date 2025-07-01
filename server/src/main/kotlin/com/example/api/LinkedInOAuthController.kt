@@ -1,19 +1,23 @@
 package com.example.api
 
+import com.example.api.client.LinkedInProfileClient
+import com.example.api.client.LinkedInDataPortabilityClient
+import com.example.api.client.LinkedInPostsClient
+import com.example.api.client.LinkedInGenericClient
+import com.example.api.dto.LinkedInPostRequest
+import org.springframework.boot.web.client.RestTemplateBuilder
 import com.linkedin.oauth.builder.ScopeBuilder
 import com.linkedin.oauth.pojo.AccessToken
 import com.linkedin.oauth.service.LinkedInOAuthService
 import com.linkedin.oauth.util.Constants.REQUEST_TOKEN_URL
 import com.linkedin.oauth.util.Constants.TOKEN_INTROSPECTION_URL
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.servlet.view.RedirectView
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -33,7 +37,19 @@ class LinkedInOAuthController {
     @Autowired
     private lateinit var restTemplateBuilder: RestTemplateBuilder
 
-    private fun getRestTemplate(): RestTemplate {
+    @Autowired
+    private lateinit var linkedInProfileClient: LinkedInProfileClient
+
+    @Autowired
+    private lateinit var linkedInDataPortabilityClient: LinkedInDataPortabilityClient
+
+    @Autowired
+    private lateinit var linkedInPostsClient: LinkedInPostsClient
+
+    @Autowired
+    private lateinit var linkedInGenericClient: LinkedInGenericClient
+
+    private fun getRestTemplate(): org.springframework.web.client.RestTemplate {
         return restTemplateBuilder.build()
     }
 
@@ -185,19 +201,9 @@ class LinkedInOAuthController {
         if (token == null) {
             return "{\"error\": \"No access token available. Please generate a token first.\"}"
         }
-        
-        val headers = HttpHeaders()
-        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        
+
         try {
-            val userinfoUrl = "https://api.linkedin.com/v2/userinfo"
-            return getRestTemplate().exchange(
-                userinfoUrl, 
-                HttpMethod.GET, 
-                HttpEntity<Any>(headers), 
-                String::class.java
-            ).body ?: ""
+            return linkedInProfileClient.getUserInfo("Bearer $token")
         } catch (e: Exception) {
             return "{\"error\": \"Failed to process profile data: ${e.message?.replace("\"", "\\\"")}\"}"
         }
@@ -224,22 +230,9 @@ class LinkedInOAuthController {
             return "{\"error\": \"No access token available. Please generate a token first.\"}"
         }
 
-        val headers = HttpHeaders()
-        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        headers.set("LinkedIn-Version", "202312") // Required version header
-        headers.set(HttpHeaders.CONTENT_TYPE, "application/json")
-
         try {
             // Query the Member Snapshot API for CONNECTIONS domain
-            val snapshotUrl = "https://api.linkedin.com/rest/memberSnapshotData?q=criteria&domain=CONNECTIONS"
-
-            val response = getRestTemplate().exchange(
-                snapshotUrl,
-                HttpMethod.GET,
-                HttpEntity<Any>(headers),
-                String::class.java
-            ).body ?: ""
+            val response = linkedInDataPortabilityClient.getMemberSnapshotData("Bearer $token")
 
             if (response.isEmpty()) {
                 return "{\"error\": \"Empty response from Member Snapshot API\"}"
@@ -254,14 +247,9 @@ class LinkedInOAuthController {
             val maxPages = 10
 
             while (nextPageUrl.isNotEmpty() && pageCount < maxPages) {
-                val fullNextPageUrl = "https://api.linkedin.com$nextPageUrl"
+                val fullNextPageUrl = java.net.URI("https://api.linkedin.com$nextPageUrl")
 
-                val nextPageResponse = getRestTemplate().exchange(
-                    fullNextPageUrl,
-                    HttpMethod.GET,
-                    HttpEntity<Any>(headers),
-                    String::class.java
-                ).body ?: ""
+                val nextPageResponse = linkedInGenericClient.getFromUrl(fullNextPageUrl, "Bearer $token")
 
                 if (nextPageResponse.isEmpty()) {
                     break
@@ -339,22 +327,8 @@ class LinkedInOAuthController {
             return "{\"error\": \"No access token available. Please generate a token first.\"}"
         }
 
-        val headers = HttpHeaders()
-        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        headers.set("LinkedIn-Version", "202312")
-
         try {
-            // Call the organizationAcls API to get organizations the user has access to
-            val organizationsUrl = "https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(organization~(id,localizedName)))"
-            val response = getRestTemplate().exchange(
-                organizationsUrl,
-                HttpMethod.GET,
-                HttpEntity<Any>(headers),
-                String::class.java
-            ).body ?: ""
-
-            return response
+            return linkedInProfileClient.getOrganizationAccess("Bearer $token")
         } catch (e: Exception) {
             return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
         }
@@ -377,51 +351,33 @@ class LinkedInOAuthController {
             return "{\"error\": \"Post content cannot be empty.\"}"
         }
 
-        val headers = HttpHeaders()
-        headers.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, OAuth)")
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer $token")
-        headers.set("X-Restli-Protocol-Version", "2.0.0")
-        headers.set("LinkedIn-Version", "202505") // Use the appropriate version
-        headers.set(HttpHeaders.CONTENT_TYPE, "application/json")
-
         try {
             // First, get the current user's URN
-            val personUrn = getCurrentUserUrn(headers)
+            val personUrn = getCurrentUserUrn(token!!)
             if (personUrn.startsWith("{\"error\"")) {
                 return personUrn // Return the error message
             }
 
-            // Create the post request body using the user's URN as the author
-            val requestBody = "{"
-                .plus("\"author\": \"$personUrn\",")
-                .plus("\"commentary\": \"$content\",")
-                .plus("\"visibility\": \"PUBLIC\",")
-                .plus("\"distribution\": {")
-                .plus("\"feedDistribution\": \"MAIN_FEED\",")
-                .plus("\"targetEntities\": [],")
-                .plus("\"thirdPartyDistributionChannels\": []")
-                .plus("},")
-                .plus("\"lifecycleState\": \"PUBLISHED\",")
-                .plus("\"isReshareDisabledByAuthor\": false")
-                .plus("}")
+            // Create the post request using the data class
+            val postRequest = LinkedInPostRequest(
+                author = personUrn,
+                commentary = content
+            )
 
-            // Make the POST request to LinkedIn Posts API
-            val postsApiUrl = "https://api.linkedin.com/rest/posts"
-            val requestEntity = HttpEntity(requestBody, headers)
-
-            val response = getRestTemplate().exchange(
-                postsApiUrl,
-                HttpMethod.POST,
-                requestEntity,
-                String::class.java
+            // Make the POST request to LinkedIn Posts API using Feign client
+            val response = linkedInPostsClient.createPost(
+                authorization = "Bearer $token",
+                linkedInVersion = "202505",
+                protocolVersion = "2.0.0",
+                postRequest = postRequest
             )
 
             // Check if the post was created successfully
-            if (response.statusCode.is2xxSuccessful) {
-                val postId = response.headers["x-restli-id"]?.firstOrNull() ?: "Unknown"
+            if (response.status() in 200..299) {
+                val postId = response.headers()["x-restli-id"]?.firstOrNull() ?: "Unknown"
                 return "{\"success\": true, \"message\": \"Post created successfully as $personUrn\", \"postId\": \"$postId\"}"
             } else {
-                return "{\"error\": \"Failed to create post. Status: ${response.statusCode}\"}"
+                return "{\"error\": \"Failed to create post. Status: ${response.status()}\"}"
             }
 
         } catch (e: Exception) {
@@ -437,27 +393,12 @@ class LinkedInOAuthController {
      * @param headers The HTTP headers with authorization token
      * @return The user's URN in the format urn:li:person:{sub}
      */
-    private fun getCurrentUserUrn(headers: HttpHeaders): String {
+    private fun getCurrentUserUrn(token: String): String {
         try {
-            // Ensure we have the LinkedIn-Version header
-            if (!headers.containsKey("LinkedIn-Version")) {
-                headers.set("LinkedIn-Version", "202302")
-            }
-
             // Call the userinfo endpoint to get user information
-            val userinfoUrl = "https://api.linkedin.com/v2/userinfo"
-            logger.info("Making request to LinkedIn userinfo API: $userinfoUrl")
-            logger.info("Headers: ${headers.toString()}")
+            logger.info("Making request to LinkedIn userinfo API")
 
-            val responseEntity = getRestTemplate().exchange(
-                userinfoUrl,
-                HttpMethod.GET,
-                HttpEntity<Any>(headers),
-                String::class.java
-            )
-
-            logger.info("Response status: ${responseEntity.statusCode}")
-            val response = responseEntity.body ?: ""
+            val response = linkedInProfileClient.getUserInfo("Bearer $token")
             logger.info("Response body: $response")
 
             // Extract the 'sub' field from the response

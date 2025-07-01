@@ -1,12 +1,9 @@
 package com.example.api
 
-import org.springframework.http.HttpMethod
+import com.example.api.client.LinkedInMarketingClient
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.HttpStatusCodeException
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
 
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -24,7 +21,9 @@ import java.util.logging.Logger
 class LinkedInMarketingController {
 
     private val logger = Logger.getLogger(LinkedInMarketingController::class.java.name)
-    private val lmsTemplate = RestTemplate()
+
+    @Autowired
+    private lateinit var linkedInMarketingClient: LinkedInMarketingClient
 
     /**
      * Find Ad Accounts for a user
@@ -33,21 +32,11 @@ class LinkedInMarketingController {
      */
     @RequestMapping(value = ["/findAdAccounts"])
     fun findAdAccounts(): String {
-        val header = getHeader()
         return try {
-            val endpoint = "https://api.linkedin.com/v2/adAccountUsersV2?q=authenticatedUser&oauth2_access_token="
-            val token = LinkedInOAuthController.token
-            val response = lmsTemplate.exchange(
-                endpoint + token,
-                HttpMethod.GET,
-                HttpEntity<Any>(header),
-                String::class.java
-            ).body
+            val token = LinkedInOAuthController.token ?: return "Error: No access token available"
+            val response = linkedInMarketingClient.getAdAccounts("Bearer $token", accessToken = token)
             logger.log(Level.INFO, "Find Ad Accounts API call successful.")
-            response ?: ""
-        } catch (e: HttpStatusCodeException) {
-            logger.log(Level.SEVERE, "Error finding Ad Accounts: {0}", e.responseBodyAsString)
-            e.responseBodyAsString
+            response
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Error finding Ad Accounts: {0}", e.message)
             "Error finding Ad Accounts: ${e.message}"
@@ -61,35 +50,16 @@ class LinkedInMarketingController {
      */
     @RequestMapping(value = ["/getUserOrgAccess"])
     fun getUserOrgAccess(): String {
-        val header = getHeader()
         return try {
-            val endpoint = "https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&oauth2_access_token="
-            val token = LinkedInOAuthController.token
-            val response = lmsTemplate.exchange(
-                endpoint + token,
-                HttpMethod.GET,
-                HttpEntity<Any>(header),
-                String::class.java
-            ).body
+            val token = LinkedInOAuthController.token ?: return "Error: No access token available"
+            val response = linkedInMarketingClient.getOrganizationAcls("Bearer $token", accessToken = token)
             logger.log(Level.INFO, "Find User Roles API call successful.")
-            response ?: ""
-        } catch (e: HttpStatusCodeException) {
-            logger.log(Level.SEVERE, "Error finding User Roles: {0}", e.responseBodyAsString)
-            e.responseBodyAsString
+            response
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Error finding User Roles: {0}", e.message)
             "Error finding User Roles: ${e.message}"
         }
     }
 
-    /**
-     * Get Header
-     *
-     * @return HttpHeaders
-     */
-    private fun getHeader(): HttpHeaders {
-        val header = HttpHeaders()
-        header.set(HttpHeaders.USER_AGENT, "java-sample-application (version 1.0, Marketing)")
-        return header
-    }
+
 }
