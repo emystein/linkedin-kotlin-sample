@@ -1,7 +1,6 @@
 package com.example.api
 
 import com.linkedin.api.client.LinkedInPostsClient
-import com.linkedin.api.client.LinkedInProfileClient
 import com.linkedin.api.dto.LinkedInPostRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -21,7 +20,7 @@ class LinkedInPostsController {
     private lateinit var linkedInPostsClient: LinkedInPostsClient
 
     @Autowired
-    private lateinit var linkedInProfileClient: LinkedInProfileClient
+    private lateinit var linkedInProfileController: LinkedInProfileController
 
     private val logger = Logger.getLogger(LinkedInPostsController::class.java.name)
 
@@ -44,8 +43,8 @@ class LinkedInPostsController {
         }
 
         try {
-            // First, get the current user's URN
-            val personUrn = getCurrentUserUrn(token)
+            // First, get the current user's URN using the profile controller
+            val personUrn = linkedInProfileController.getCurrentUserUrn(token)
             if (personUrn.startsWith("{\"error\"")) {
                 return personUrn // Return the error message
             }
@@ -77,36 +76,5 @@ class LinkedInPostsController {
         }
     }
 
-    /**
-     * Helper method to get the current user's URN using the userinfo endpoint
-     * as described in the LinkedIn OpenID Connect documentation
-     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
-     *
-     * @param token The access token
-     * @return The user's URN in the format urn:li:person:{sub}
-     */
-    private fun getCurrentUserUrn(token: String): String {
-        try {
-            // Call the userinfo endpoint to get user information
-            logger.info("Making request to LinkedIn userinfo API")
 
-            val response = linkedInProfileClient.getUserInfo("Bearer $token")
-            logger.info("Response body: $response")
-
-            // Extract the 'sub' field from the response
-            val subRegex = "\"sub\":\\s*\"([^\"]+)\"".toRegex()
-            val subMatch = subRegex.find(response)
-            val sub = subMatch?.groupValues?.getOrNull(1) ?: ""
-
-            if (sub.isNotEmpty()) {
-                return "urn:li:person:$sub"
-            } else {
-                return "{\"error\": \"Could not extract 'sub' field from userinfo response\"}"
-            }
-        } catch (e: Exception) {
-            logger.severe("Error retrieving user URN: ${e.message}")
-            e.printStackTrace()
-            return "{\"error\": \"Failed to retrieve user URN: ${e.message?.replace("\"", "\\\"")}\"}"
-        }
-    }
 }

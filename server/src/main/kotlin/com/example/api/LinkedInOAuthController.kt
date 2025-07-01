@@ -1,6 +1,5 @@
 package com.example.api
 
-import com.linkedin.api.client.LinkedInProfileClient
 import com.linkedin.api.client.LinkedInDataPortabilityClient
 import com.linkedin.api.client.LinkedInGenericClient
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -34,9 +33,6 @@ class LinkedInOAuthController {
 
     @Autowired
     private lateinit var restTemplateBuilder: RestTemplateBuilder
-
-    @Autowired
-    private lateinit var linkedInProfileClient: LinkedInProfileClient
 
     @Autowired
     private lateinit var linkedInDataPortabilityClient: LinkedInDataPortabilityClient
@@ -190,25 +186,7 @@ class LinkedInOAuthController {
         }
     }
 
-    /**
-     * Make a Public profile request with LinkedIn API using the userinfo endpoint
-     * as described in the LinkedIn OpenID Connect documentation
-     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
-     *
-     * @return Public profile of user including the 'sub' field
-     */
-    @RequestMapping(value = ["/profile"])
-    fun profile(): String {
-        if (token == null) {
-            return "{\"error\": \"No access token available. Please generate a token first.\"}"
-        }
 
-        try {
-            return linkedInProfileClient.getUserInfo("Bearer $token")
-        } catch (e: Exception) {
-            return "{\"error\": \"Failed to process profile data: ${e.message?.replace("\"", "\\\"")}\"}"
-        }
-    }
 
     /**
      * Get the current access token
@@ -281,59 +259,9 @@ class LinkedInOAuthController {
         return matchResult?.groupValues?.getOrNull(1)?.replace("\\", "") ?: ""
     }
 
-    /**
-     * Get the Person URN for the authenticated user using the userinfo endpoint
-     * as described in the LinkedIn OpenID Connect documentation
-     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
-     *
-     * This method reuses the profile() response to extract the 'sub' field
-     *
-     * @return The Person URN in the format urn:li:person:{sub}
-     */
-    @RequestMapping(value = ["/getPersonUrn"])
-    fun getPersonUrn(): String {
-        // Get the profile data from the profile() method
-        val profileResponse = profile()
-        
-        // Check if there was an error getting the profile
-        if (profileResponse.contains("\"error\":")) {
-            return profileResponse // Return the error message
-        }
-        
-        try {
-            // Extract the 'sub' field from the profile response
-            val subRegex = "\"sub\":\\s*\"([^\"]+)\"".toRegex()
-            val subMatch = subRegex.find(profileResponse)
-            val sub = subMatch?.groupValues?.getOrNull(1) ?: ""
-            
-            if (sub.isNotEmpty()) {
-                val personUrn = "urn:li:person:$sub"
-                return "{\"personUrn\": \"$personUrn\"}"
-            } else {
-                return "{\"error\": \"Could not extract 'sub' field from profile response: $profileResponse\"}"
-            }
-        } catch (e: Exception) {
-            return "{\"error\": \"Failed to process profile data: ${e.message?.replace("\"", "\\\"")}\"}"
-        }
-    }
 
-    /**
-     * Get the Organization URNs that the authenticated user has access to
-     *
-     * @return A list of Organization URNs in the format urn:li:organization:{id}
-     */
-    @RequestMapping(value = ["/getOrganizationUrns"])
-    fun getOrganizationUrns(): String {
-        if (token == null) {
-            return "{\"error\": \"No access token available. Please generate a token first.\"}"
-        }
 
-        try {
-            return linkedInProfileClient.getOrganizationAccess("Bearer $token")
-        } catch (e: Exception) {
-            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
-        }
-    }
+
 
 
 
