@@ -3,7 +3,6 @@ package com.example.api
 import com.example.api.client.LinkedInProfileClient
 import com.example.api.client.LinkedInDataPortabilityClient
 import com.example.api.client.LinkedInPostsClient
-import com.example.api.client.LinkedInMarketingClient
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -24,9 +23,6 @@ class LinkedInFeignClientTest {
 
     @MockBean
     private lateinit var linkedInPostsClient: LinkedInPostsClient
-
-    @MockBean
-    private lateinit var linkedInMarketingClient: LinkedInMarketingClient
 
     @Test
     fun contextLoads() {
