@@ -1,4 +1,4 @@
-package com.example.api.config
+package com.linkedin.api.config
 
 import feign.Logger
 import feign.RequestInterceptor

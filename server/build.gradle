@@ -6,6 +6,9 @@ bootJar {
 }
 
 dependencies {
+    // LinkedIn API Client module dependency
+    implementation project(':linkedin-api-client')
+
     // Server-specific dependencies can be added here
 }
 

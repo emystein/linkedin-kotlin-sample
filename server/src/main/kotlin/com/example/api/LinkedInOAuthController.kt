@@ -1,10 +1,10 @@
 package com.example.api
 
-import com.example.api.client.LinkedInProfileClient
-import com.example.api.client.LinkedInDataPortabilityClient
-import com.example.api.client.LinkedInPostsClient
-import com.example.api.client.LinkedInGenericClient
-import com.example.api.dto.LinkedInPostRequest
+import com.linkedin.api.client.LinkedInProfileClient
+import com.linkedin.api.client.LinkedInDataPortabilityClient
+import com.linkedin.api.client.LinkedInPostsClient
+import com.linkedin.api.client.LinkedInGenericClient
+import com.linkedin.api.dto.LinkedInPostRequest
 import org.springframework.boot.web.client.RestTemplateBuilder
 import com.linkedin.oauth.builder.ScopeBuilder
 import com.linkedin.oauth.pojo.AccessToken

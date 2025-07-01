@@ -1,6 +1,6 @@
-package com.example.api.client
+package com.linkedin.api.client
 
-import com.example.api.dto.LinkedInPostRequest
+import com.linkedin.api.dto.LinkedInPostRequest
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 @FeignClient(
     name = "linkedin-posts-client",
     url = "https://api.linkedin.com",
-    configuration = [com.example.api.config.FeignConfig::class]
+    configuration = [com.linkedin.api.config.FeignConfig::class]
 )
 interface LinkedInPostsClient {
 

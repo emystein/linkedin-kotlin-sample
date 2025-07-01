@@ -1,4 +1,4 @@
-package com.example.api.dto
+package com.linkedin.api.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

@@ -1,4 +1,4 @@
-package com.example.api.client
+package com.linkedin.api.client
 
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 @FeignClient(
     name = "linkedin-oauth-client",
     url = "https://www.linkedin.com",
-    configuration = [com.example.api.config.LinkedInOAuthFeignConfig::class]
+    configuration = [com.linkedin.api.config.LinkedInOAuthFeignConfig::class]
 )
 interface LinkedInOAuthClient {
 

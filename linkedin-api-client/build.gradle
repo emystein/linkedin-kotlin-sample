@@ -1,0 +1,44 @@
+description = 'LinkedIn API Client Module'
+
+// This is a library module, not an executable application
+jar {
+    enabled = true
+    archiveClassifier = ''
+}
+
+bootJar {
+    enabled = false
+}
+
+// Disable all Spring Boot application tasks since this is a library
+tasks.named('bootDistTar') {
+    enabled = false
+}
+
+tasks.named('bootDistZip') {
+    enabled = false
+}
+
+tasks.named('bootStartScripts') {
+    enabled = false
+}
+
+dependencies {
+    // Spring Cloud OpenFeign for Feign clients
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'io.github.openfeign:feign-jackson'
+    implementation 'io.github.openfeign:feign-slf4j'
+    implementation 'io.github.openfeign.form:feign-form-spring:3.8.0'
+    
+    // Jackson for JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    
+    // Spring Boot dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework:spring-context'
+    
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

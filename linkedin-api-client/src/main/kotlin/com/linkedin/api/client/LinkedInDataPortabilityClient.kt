@@ -1,4 +1,4 @@
-package com.example.api.client
+package com.linkedin.api.client
 
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.GetMapping
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam
 @FeignClient(
     name = "linkedin-data-portability-client",
     url = "https://api.linkedin.com",
-    configuration = [com.example.api.config.FeignConfig::class]
+    configuration = [com.linkedin.api.config.FeignConfig::class]
 )
 interface LinkedInDataPortabilityClient {
 

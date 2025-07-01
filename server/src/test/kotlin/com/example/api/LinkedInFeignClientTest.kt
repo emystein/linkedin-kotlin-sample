@@ -1,8 +1,8 @@
 package com.example.api
 
-import com.example.api.client.LinkedInProfileClient
-import com.example.api.client.LinkedInDataPortabilityClient
-import com.example.api.client.LinkedInPostsClient
+import com.linkedin.api.client.LinkedInProfileClient
+import com.linkedin.api.client.LinkedInDataPortabilityClient
+import com.linkedin.api.client.LinkedInPostsClient
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
