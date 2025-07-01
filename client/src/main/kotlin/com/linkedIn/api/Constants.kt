@@ -12,7 +12,7 @@ object ClientConstants {
 
     const val PROFILE_ENDPOINT = "profile"
     const val MEMBER_CONNECTIONS_ENDPOINT = "memberConnections"
-    const val CREATE_POST_ENDPOINT = "createPost"
+    const val CREATE_POST_ENDPOINT = "posts/create"
     const val GET_PERSON_URN_ENDPOINT = "getPersonUrn"
     const val GET_ORGANIZATION_URNS_ENDPOINT = "getOrganizationUrns"
     const val OAUTH_PAGE = "index"
