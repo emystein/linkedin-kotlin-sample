@@ -12,6 +12,7 @@ import com.linkedin.oauth.service.LinkedInOAuthService
 import com.linkedin.oauth.util.Constants.REQUEST_TOKEN_URL
 import com.linkedin.oauth.util.Constants.TOKEN_INTROSPECTION_URL
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -19,9 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.view.RedirectView
-import java.io.FileNotFoundException
+
 import java.io.IOException
-import java.io.InputStream
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -53,9 +53,21 @@ class LinkedInOAuthController {
         return restTemplateBuilder.build()
     }
 
-    // Define all inputs in the property file
-    private val prop = Properties()
-    private val propFileName = "config.properties"
+    // Configuration values from environment variables
+    @Value("\${CLIENT_ID:}")
+    private lateinit var clientId: String
+
+    @Value("\${CLIENT_SECRET:}")
+    private lateinit var clientSecret: String
+
+    @Value("\${REDIRECT_URI:http://localhost:8080/login}")
+    private lateinit var redirectUri: String
+
+    @Value("\${SCOPE:openid,profile,email}")
+    private lateinit var scope: String
+
+    @Value("\${CLIENT_URL:http://localhost:8989/}")
+    private lateinit var clientUrl: String
 
     companion object {
         var token: String? = null
@@ -75,14 +87,12 @@ class LinkedInOAuthController {
     @RequestMapping(value = ["/login"])
     @Throws(Exception::class)
     fun oauth(@RequestParam(name = "code", required = false) code: String?): RedirectView {
-        loadProperty()
-
         // Construct the LinkedInOAuthService instance for use
         service = LinkedInOAuthService.LinkedInOAuthServiceBuilder()
-                .apiKey(prop.getProperty("clientId"))
-                .apiSecret(prop.getProperty("clientSecret"))
-                .defaultScope(ScopeBuilder().withScopes(*prop.getProperty("scope").split(",").toTypedArray()))
-                .callback(prop.getProperty("redirectUri"))
+                .apiKey(clientId)
+                .apiSecret(clientSecret)
+                .defaultScope(ScopeBuilder().withScopes(*scope.split(",").toTypedArray()))
+                .callback(redirectUri)
                 .build()
 
         val secretState = "secret" + Random().nextInt(999_999)
@@ -102,13 +112,12 @@ class LinkedInOAuthController {
                 accessToken[0] = service.convertJsonTokenToPojo(response)
             }
 
-            prop.setProperty("token", accessToken[0].accessToken)
             token = accessToken[0].accessToken
             refresh_token = accessToken[0].refreshToken
 
             logger.log(Level.INFO, "Generated Access token and Refresh Token.")
 
-            redirectView.url = prop.getProperty("client_url")
+            redirectView.url = clientUrl
         } else {
             redirectView.url = authorizationUrl
         }
@@ -123,15 +132,13 @@ class LinkedInOAuthController {
     @RequestMapping(value = ["/twoLeggedAuth"])
     @Throws(Exception::class)
     fun two_legged_auth(): RedirectView {
-        loadProperty()
-
         val redirectView = RedirectView()
         // Construct the LinkedInOAuthService instance for use
         service = LinkedInOAuthService.LinkedInOAuthServiceBuilder()
-                .apiKey(prop.getProperty("clientId"))
-                .apiSecret(prop.getProperty("clientSecret"))
-                .defaultScope(ScopeBuilder().withScopes(*prop.getProperty("scope").split(",").toTypedArray()))
-                .callback(prop.getProperty("redirectUri"))
+                .apiKey(clientId)
+                .apiSecret(clientSecret)
+                .defaultScope(ScopeBuilder().withScopes(*scope.split(",").toTypedArray()))
+                .callback(redirectUri)
                 .build()
 
         val accessToken = arrayOf(AccessToken())
@@ -140,13 +147,12 @@ class LinkedInOAuthController {
         val response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String::class.java)
         if (response != null) {
             accessToken[0] = service.convertJsonTokenToPojo(response)
-            prop.setProperty("token", accessToken[0].accessToken)
             token = accessToken[0].accessToken
         }
 
         logger.log(Level.INFO, "Generated Access token.")
 
-        redirectView.url = prop.getProperty("client_url")
+        redirectView.url = clientUrl
         return redirectView
     }
 
@@ -418,13 +424,5 @@ class LinkedInOAuthController {
         }
     }
 
-    @Throws(IOException::class)
-    private fun loadProperty() {
-        val inputStream: InputStream? = LinkedInOAuthController::class.java.classLoader.getResourceAsStream(propFileName)
-        if (inputStream != null) {
-            prop.load(inputStream)
-        } else {
-            throw FileNotFoundException("property file '$propFileName' not found in the classpath")
-        }
-    }
+
 }

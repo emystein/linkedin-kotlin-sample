@@ -42,19 +42,36 @@ Once you have your application, note down the Client ID and Client Secret
 
 **Configure the server app:**
 
- 1. Navigate to the **config.properties** file. You can find this file under: **/server/src/main/resources/config.properties**
- 2. Edit the following properties in the file with your client credentials:
+ 1. Navigate to the server directory and copy the **.env.example** file to **.env**:
+    ```bash
+    cd server
+    cp .env.example .env
+    ```
+ 2. Edit the .env file and replace the placeholder values with your actual LinkedIn app credentials:
 
-    > clientId = <replace_with_client_id>
+    ```
+    CLIENT_ID=<replace_with_client_id>
+    CLIENT_SECRET=<replace_with_client_secret>
+    REDIRECT_URI=<replace_with_redirect_url_set_in_developer_portal>
+    SCOPE=<replace_with_api_scope>
+    CLIENT_URL=<replace_with_client_url>
+    ```
 
-    > clientSecret = <replace_with_client_secret>
-
-    > redirectUri = <replace_with_redirect_url_set_in_developer_portal>
-
-    > scope = <replace_with_api_scope>
-    client_url = <replace_with_client_url>
+    Example:
+    ```
+    CLIENT_ID=77eyglizzofb4g
+    CLIENT_SECRET=your_client_secret_here
+    REDIRECT_URI=http://localhost:8080/login
+    SCOPE=openid,profile,email,w_member_social
+    CLIENT_URL=http://localhost:8989/
+    ```
 
  3. Save the changes.
+
+**Note:**
+- The .env file is automatically ignored by git to keep your credentials secure. Never commit your actual credentials to version control.
+- The application uses Spring Boot's native .env file support, so the .env file must be in the server directory.
+- When running the server, it will automatically load the environment variables from the .env file.
 
 ## Start the application
 

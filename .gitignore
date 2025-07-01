@@ -10,7 +10,7 @@ bin/
 *.classpath
 *.project
 config.properties
-.env
+server/.env
 
 # Gradle specific
 gradle/
