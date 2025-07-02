@@ -221,7 +221,7 @@ class ResponseDataClassesTest {
     }
 
     @Test
-    fun `ProfileInfoResponse should deserialize from JSON correctly`() {
+    fun `ProfileInfoResponse should deserialize from JSON correctly with string locale`() {
         // Given
         val json = """
             {
@@ -246,6 +246,68 @@ class ResponseDataClassesTest {
         assertEquals("Doe", response.familyName)
         assertEquals("https://media.licdn-ei.com/dms/image/profile.jpg", response.picture)
         assertEquals("en-US", response.locale)
+        assertEquals("john.doe@email.com", response.email)
+        assertEquals(true, response.emailVerified)
+    }
+
+    @Test
+    fun `ProfileInfoResponse should deserialize from JSON correctly with object locale`() {
+        // Given
+        val json = """
+            {
+                "sub": "782bbtaQ",
+                "name": "John Doe",
+                "given_name": "John",
+                "family_name": "Doe",
+                "picture": "https://media.licdn-ei.com/dms/image/profile.jpg",
+                "locale": {
+                    "language": "en",
+                    "country": "US"
+                },
+                "email": "john.doe@email.com",
+                "email_verified": true
+            }
+        """.trimIndent()
+
+        // When
+        val response = objectMapper.readValue(json, ProfileInfoResponse::class.java)
+
+        // Then
+        assertEquals("782bbtaQ", response.sub)
+        assertEquals("John Doe", response.name)
+        assertEquals("John", response.givenName)
+        assertEquals("Doe", response.familyName)
+        assertEquals("https://media.licdn-ei.com/dms/image/profile.jpg", response.picture)
+        assertEquals("en-US", response.locale)
+        assertEquals("john.doe@email.com", response.email)
+        assertEquals(true, response.emailVerified)
+    }
+
+    @Test
+    fun `ProfileInfoResponse should handle missing locale field`() {
+        // Given
+        val json = """
+            {
+                "sub": "782bbtaQ",
+                "name": "John Doe",
+                "given_name": "John",
+                "family_name": "Doe",
+                "picture": "https://media.licdn-ei.com/dms/image/profile.jpg",
+                "email": "john.doe@email.com",
+                "email_verified": true
+            }
+        """.trimIndent()
+
+        // When
+        val response = objectMapper.readValue(json, ProfileInfoResponse::class.java)
+
+        // Then
+        assertEquals("782bbtaQ", response.sub)
+        assertEquals("John Doe", response.name)
+        assertEquals("John", response.givenName)
+        assertEquals("Doe", response.familyName)
+        assertEquals("https://media.licdn-ei.com/dms/image/profile.jpg", response.picture)
+        assertEquals(null, response.locale)
         assertEquals("john.doe@email.com", response.email)
         assertEquals(true, response.emailVerified)
     }
