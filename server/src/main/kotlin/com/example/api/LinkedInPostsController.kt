@@ -1,11 +1,14 @@
 package com.example.api
 
+import com.example.api.dto.ErrorResponse
+import com.example.api.dto.PostCreationResponse
 import com.linkedin.api.client.LinkedInPostsClient
 import com.linkedin.api.dto.LinkedInPostRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.logging.Level
 import java.util.logging.Logger
 
 /**
@@ -32,21 +35,21 @@ class LinkedInPostsController {
      * @return Response from the LinkedIn Posts API
      */
     @RequestMapping(value = ["/create"])
-    fun createPost(@RequestParam(required = false) content: String?): String {
+    fun createPost(@RequestParam(required = false) content: String?): Any {
         val token = LinkedInOAuthController.token
         if (token == null) {
-            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+            return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }
 
         if (content.isNullOrBlank()) {
-            return "{\"error\": \"Post content cannot be empty.\"}"
+            return ErrorResponse("empty_content", "Post content cannot be empty.")
         }
 
         try {
             // First, get the current user's URN using the profile controller
             val personUrn = linkedInProfileController.getCurrentUserUrn(token)
             if (personUrn.startsWith("{\"error\"")) {
-                return personUrn // Return the error message
+                return ErrorResponse("urn_retrieval_error", "Failed to retrieve user URN: $personUrn")
             }
 
             // Create the post request using the data class
@@ -66,13 +69,19 @@ class LinkedInPostsController {
             // Check if the post was created successfully
             if (response.status() in 200..299) {
                 val postId = response.headers()["x-restli-id"]?.firstOrNull() ?: "Unknown"
-                return "{\"success\": true, \"message\": \"Post created successfully as $personUrn\", \"postId\": \"$postId\"}"
+                return PostCreationResponse(
+                    success = true,
+                    message = "Post created successfully",
+                    postId = postId,
+                    author = personUrn
+                )
             } else {
-                return "{\"error\": \"Failed to create post. Status: ${response.status()}\"}"
+                return ErrorResponse("post_creation_failed", "Failed to create post. Status: ${response.status()}")
             }
 
         } catch (e: Exception) {
-            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
+            logger.log(Level.SEVERE, "Error creating post", e)
+            return ErrorResponse("post_creation_error", "Failed to create post: ${e.message}")
         }
     }
 

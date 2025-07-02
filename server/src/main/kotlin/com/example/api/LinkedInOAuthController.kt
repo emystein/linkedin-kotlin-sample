@@ -1,5 +1,11 @@
 package com.example.api
 
+import com.example.api.dto.ErrorResponse
+import com.example.api.dto.MemberConnectionsResponse
+import com.example.api.dto.RefreshTokenResponse
+import com.example.api.dto.TokenIntrospectionResponse
+import com.example.api.dto.TokenResponse
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInDataPortabilityClient
 import com.linkedin.api.client.LinkedInGenericClient
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -68,6 +74,7 @@ class LinkedInOAuthController {
     lateinit var service: LinkedInOAuthService
 
     private val logger = Logger.getLogger(LinkedInOAuthController::class.java.name)
+    private val objectMapper = ObjectMapper()
 
     /**
      * Make a Login request with LinkedIN Oauth API
@@ -154,14 +161,24 @@ class LinkedInOAuthController {
      */
     @RequestMapping(value = ["/tokenIntrospection"])
     @Throws(Exception::class)
-    fun token_introspection(): String {
+    fun token_introspection(): Any {
         return if (::service.isInitialized) {
-            val request = service.introspectToken(token ?: "")
-            val response = getRestTemplate().postForObject(TOKEN_INTROSPECTION_URL, request, String::class.java)
-            logger.log(Level.INFO, "Token introspected. Details are {0}", response)
-            response ?: ""
+            try {
+                val request = service.introspectToken(token ?: "")
+                val response = getRestTemplate().postForObject(TOKEN_INTROSPECTION_URL, request, String::class.java)
+                logger.log(Level.INFO, "Token introspected. Details are {0}", response)
+
+                if (response != null) {
+                    objectMapper.readValue(response, TokenIntrospectionResponse::class.java)
+                } else {
+                    ErrorResponse("empty_response", "Empty response from token introspection API")
+                }
+            } catch (e: Exception) {
+                logger.log(Level.SEVERE, "Error during token introspection", e)
+                ErrorResponse("introspection_error", "Failed to introspect token: ${e.message}")
+            }
         } else {
-            "Error introspecting token, service is not initiated"
+            ErrorResponse("service_not_initialized", "Error introspecting token, service is not initiated")
         }
     }
 
@@ -172,17 +189,30 @@ class LinkedInOAuthController {
      */
     @RequestMapping(value = ["/refreshToken"])
     @Throws(IOException::class)
-    fun refresh_token(): String? {
-        var response: String? = null
-        if (refresh_token != null) {
-            val refreshTokenCopy = refresh_token ?: ""
-            val request = service.getAccessTokenFromRefreshToken(refreshTokenCopy)
-            response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String::class.java)
-            logger.log(Level.INFO, "Used Refresh Token to generate a new access token successfully.")
-            return response
+    fun refresh_token(): Any {
+        return if (refresh_token != null) {
+            try {
+                val refreshTokenCopy = refresh_token ?: ""
+                val request = service.getAccessTokenFromRefreshToken(refreshTokenCopy)
+                val response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String::class.java)
+                logger.log(Level.INFO, "Used Refresh Token to generate a new access token successfully.")
+
+                if (response != null) {
+                    val refreshTokenResponse = objectMapper.readValue(response, RefreshTokenResponse::class.java)
+                    // Update the stored tokens
+                    token = refreshTokenResponse.accessToken ?: token
+                    refresh_token = refreshTokenResponse.refreshToken ?: refresh_token
+                    refreshTokenResponse
+                } else {
+                    ErrorResponse("empty_response", "Empty response from refresh token API")
+                }
+            } catch (e: Exception) {
+                logger.log(Level.SEVERE, "Error during token refresh", e)
+                ErrorResponse("refresh_error", "Failed to refresh token: ${e.message}")
+            }
         } else {
             logger.log(Level.INFO, "Refresh Token cannot be empty. Generate 3L Access Token and Retry again.")
-            return response
+            ErrorResponse("missing_refresh_token", "Refresh Token cannot be empty. Generate 3L Access Token and Retry again.")
         }
     }
 
@@ -191,22 +221,26 @@ class LinkedInOAuthController {
     /**
      * Get the current access token
      *
-     * @return The current access token or empty string if none exists
+     * @return The current access token or error response if none exists
      */
     @RequestMapping(value = ["/getToken"])
-    fun getToken(): String {
-        return token ?: ""
+    fun getToken(): Any {
+        return if (token != null) {
+            TokenResponse(accessToken = token!!)
+        } else {
+            ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        }
     }
 
     /**
      * Get member connections using the Member Data Portability API
      *
-     * @return Member connections data in JSON format
+     * @return Member connections data as structured response
      */
     @RequestMapping(value = ["/memberConnections"])
-    fun memberConnections(): String {
+    fun memberConnections(): Any {
         if (token == null) {
-            return "{\"error\": \"No access token available. Please generate a token first.\"}"
+            return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }
 
         try {
@@ -214,38 +248,30 @@ class LinkedInOAuthController {
             val response = linkedInDataPortabilityClient.getMemberSnapshotData("Bearer $token")
 
             if (response.isEmpty()) {
-                return "{\"error\": \"Empty response from Member Snapshot API\"}"
+                return ErrorResponse("empty_response", "Empty response from Member Snapshot API")
             }
 
-            // Check if we need to handle pagination
-            var allData = response
-            var nextPageUrl = extractNextPageUrl(response)
+            // Try to parse the first page response
+            return try {
+                val firstPageResponse = objectMapper.readValue(response, MemberConnectionsResponse::class.java)
 
-            // Process up to 10 pages of data to avoid infinite loops
-            var pageCount = 1
-            val maxPages = 10
-
-            while (nextPageUrl.isNotEmpty() && pageCount < maxPages) {
-                val fullNextPageUrl = java.net.URI("https://api.linkedin.com$nextPageUrl")
-
-                val nextPageResponse = linkedInGenericClient.getFromUrl(fullNextPageUrl, "Bearer $token")
-
-                if (nextPageResponse.isEmpty()) {
-                    break
-                }
-
-                // Combine the data (in a real implementation, you would merge the JSON properly)
-                allData += "\n--- Page ${pageCount + 1} ---\n$nextPageResponse"
-
-                // Get the next page URL
-                nextPageUrl = extractNextPageUrl(nextPageResponse)
-                pageCount++
+                // For now, return the first page. In a production implementation,
+                // you might want to handle pagination differently
+                firstPageResponse
+            } catch (parseException: Exception) {
+                logger.log(Level.WARNING, "Could not parse response as structured data, returning raw response", parseException)
+                // If parsing fails, return a generic response with the raw data
+                // This handles cases where the API response format might be different
+                MemberConnectionsResponse(
+                    data = emptyList(),
+                    paging = null,
+                    metadata = mapOf("raw_response" to response, "parse_error" to (parseException.message ?: "Unknown parsing error"))
+                )
             }
-
-            return allData
 
         } catch (e: Exception) {
-            return "{\"error\": \"${e.message?.replace("\"", "\\\"")}\"}"
+            logger.log(Level.SEVERE, "Error retrieving member connections", e)
+            return ErrorResponse("api_error", "Failed to retrieve member connections: ${e.message}")
         }
     }
 
