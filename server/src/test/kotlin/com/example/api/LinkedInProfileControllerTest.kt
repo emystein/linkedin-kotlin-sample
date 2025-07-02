@@ -3,18 +3,37 @@ package com.example.api
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.PersonUrnResponse
 import com.example.api.dto.ProfileInfoResponse
+import com.example.api.service.LinkedInProfileService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 
 class LinkedInProfileControllerTest {
 
-    private val controller = LinkedInProfileController()
+    @Mock
+    private lateinit var linkedInProfileService: LinkedInProfileService
+
+    private lateinit var controller: LinkedInProfileController
+
+    @BeforeEach
+    fun setUp() {
+        MockitoAnnotations.openMocks(this)
+        controller = LinkedInProfileController()
+        // Use reflection to inject the mock service
+        val serviceField = LinkedInProfileController::class.java.getDeclaredField("linkedInProfileService")
+        serviceField.isAccessible = true
+        serviceField.set(controller, linkedInProfileService)
+    }
 
     @Test
-    fun `getProfileInfo should return ErrorResponse when token is null`() {
+    fun `getProfileInfo should return ErrorResponse when service returns error`() {
         // Given
-        LinkedInOAuthController.token = null
+        val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        `when`(linkedInProfileService.getProfileInfo()).thenReturn(expectedError)
 
         // When
         val result = controller.getProfileInfo()
@@ -27,9 +46,10 @@ class LinkedInProfileControllerTest {
     }
 
     @Test
-    fun `getPersonUrn should return ErrorResponse when profile info returns error`() {
+    fun `getPersonUrn should return ErrorResponse when service returns error`() {
         // Given
-        LinkedInOAuthController.token = null
+        val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        `when`(linkedInProfileService.getPersonUrn()).thenReturn(expectedError)
 
         // When
         val result = controller.getPersonUrn()
@@ -41,9 +61,10 @@ class LinkedInProfileControllerTest {
     }
 
     @Test
-    fun `getOrganizationUrns should return ErrorResponse when token is null`() {
+    fun `getOrganizationUrns should return ErrorResponse when service returns error`() {
         // Given
-        LinkedInOAuthController.token = null
+        val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        `when`(linkedInProfileService.getOrganizationUrns()).thenReturn(expectedError)
 
         // When
         val result = controller.getOrganizationUrns()
@@ -56,9 +77,11 @@ class LinkedInProfileControllerTest {
     }
 
     @Test
-    fun `getCurrentUserUrn should return error JSON when token is invalid`() {
+    fun `getCurrentUserUrn should return error JSON when service returns error`() {
         // Given
         val invalidToken = "invalid_token"
+        val expectedError = "{\"error\": \"Failed to retrieve user URN: Invalid token\"}"
+        `when`(linkedInProfileService.getCurrentUserUrn(invalidToken)).thenReturn(expectedError)
 
         // When
         val result = controller.getCurrentUserUrn(invalidToken)

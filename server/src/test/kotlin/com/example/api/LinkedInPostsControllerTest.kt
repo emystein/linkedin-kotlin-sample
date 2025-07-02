@@ -2,19 +2,38 @@ package com.example.api
 
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.PostCreationResponse
+import com.example.api.service.LinkedInPostsService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 
 class LinkedInPostsControllerTest {
 
-    private val controller = LinkedInPostsController()
+    @Mock
+    private lateinit var linkedInPostsService: LinkedInPostsService
+
+    private lateinit var controller: LinkedInPostsController
+
+    @BeforeEach
+    fun setUp() {
+        MockitoAnnotations.openMocks(this)
+        controller = LinkedInPostsController()
+        // Use reflection to inject the mock service
+        val serviceField = LinkedInPostsController::class.java.getDeclaredField("linkedInPostsService")
+        serviceField.isAccessible = true
+        serviceField.set(controller, linkedInPostsService)
+    }
 
     @Test
-    fun `createPost should return ErrorResponse when token is null`() {
+    fun `createPost should return ErrorResponse when service returns error`() {
         // Given
-        LinkedInOAuthController.token = null
         val content = "Test post content"
+        val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -29,8 +48,9 @@ class LinkedInPostsControllerTest {
     @Test
     fun `createPost should return ErrorResponse when content is null`() {
         // Given
-        LinkedInOAuthController.token = "test_token"
         val content: String? = null
+        val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
+        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -45,8 +65,9 @@ class LinkedInPostsControllerTest {
     @Test
     fun `createPost should return ErrorResponse when content is blank`() {
         // Given
-        LinkedInOAuthController.token = "test_token"
         val content = "   "
+        val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
+        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -61,8 +82,9 @@ class LinkedInPostsControllerTest {
     @Test
     fun `createPost should return ErrorResponse when content is empty`() {
         // Given
-        LinkedInOAuthController.token = "test_token"
         val content = ""
+        val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
+        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
