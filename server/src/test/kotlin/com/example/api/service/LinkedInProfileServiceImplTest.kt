@@ -34,21 +34,6 @@ class LinkedInProfileServiceImplTest {
     }
 
     @Test
-    fun `getProfileInfo should return ErrorResponse when token is null`() {
-        // Given
-        val token: String? = null
-
-        // When
-        val result = service.getProfileInfo(token)
-
-        // Then
-        assertTrue(result is ErrorResponse)
-        val errorResponse = result as ErrorResponse
-        assertEquals("no_token", errorResponse.error)
-        assertTrue(errorResponse.message!!.contains("No access token available"))
-    }
-
-    @Test
     fun `getProfileInfo should return ProfileInfoResponse when successful`() {
         // Given
         val token = "valid_token"
@@ -64,6 +49,22 @@ class LinkedInProfileServiceImplTest {
         assertEquals("123456", profileResponse.sub)
         assertEquals("John Doe", profileResponse.name)
         assertEquals("john@example.com", profileResponse.email)
+    }
+
+    @Test
+    fun `getProfileInfo should return ErrorResponse when API call fails`() {
+        // Given
+        val token = "invalid_token"
+        `when`(linkedInProfileClient.getUserInfo("Bearer invalid_token")).thenThrow(RuntimeException("API Error"))
+
+        // When
+        val result = service.getProfileInfo(token)
+
+        // Then
+        assertTrue(result is ErrorResponse)
+        val errorResponse = result as ErrorResponse
+        assertEquals("profile_error", errorResponse.error)
+        assertTrue(errorResponse.message!!.contains("Failed to process profile data"))
     }
 
     @Test
@@ -99,9 +100,10 @@ class LinkedInProfileServiceImplTest {
     }
 
     @Test
-    fun `getOrganizationUrns should return ErrorResponse when token is null`() {
+    fun `getOrganizationUrns should return ErrorResponse when API call fails`() {
         // Given
-        val token: String? = null
+        val token = "invalid_token"
+        `when`(linkedInProfileClient.getOrganizationAccess("Bearer invalid_token")).thenThrow(RuntimeException("API Error"))
 
         // When
         val result = service.getOrganizationUrns(token)
@@ -109,8 +111,8 @@ class LinkedInProfileServiceImplTest {
         // Then
         assertTrue(result is ErrorResponse)
         val errorResponse = result as ErrorResponse
-        assertEquals("no_token", errorResponse.error)
-        assertTrue(errorResponse.message!!.contains("No access token available"))
+        assertEquals("organization_access_error", errorResponse.error)
+        assertTrue(errorResponse.message!!.contains("Failed to retrieve organization access"))
     }
 
     @Test

@@ -10,22 +10,6 @@ class LinkedInPostsServiceImplTest {
     private val service = LinkedInPostsServiceImpl()
 
     @Test
-    fun `createPost should return ErrorResponse when token is null`() {
-        // Given
-        val token: String? = null
-        val content = "Test post content"
-
-        // When
-        val result = service.createPost(token, content)
-
-        // Then
-        assertTrue(result is ErrorResponse)
-        val errorResponse = result as ErrorResponse
-        assertEquals("no_token", errorResponse.error)
-        assertTrue(errorResponse.message!!.contains("No access token available"))
-    }
-
-    @Test
     fun `createPost should return ErrorResponse when content is null`() {
         // Given
         val token = "test_token"

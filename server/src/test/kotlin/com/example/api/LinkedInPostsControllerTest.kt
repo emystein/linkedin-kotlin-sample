@@ -29,11 +29,10 @@ class LinkedInPostsControllerTest {
     }
 
     @Test
-    fun `createPost should return ErrorResponse when service returns error`() {
+    fun `createPost should return ErrorResponse when token is null`() {
         // Given
         val content = "Test post content"
-        val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
-        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
+        LinkedInOAuthController.token = null
 
         // When
         val result = controller.createPost(content)
@@ -49,8 +48,9 @@ class LinkedInPostsControllerTest {
     fun `createPost should return ErrorResponse when content is null`() {
         // Given
         val content: String? = null
+        LinkedInOAuthController.token = "test_token"
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost("test_token", content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -66,8 +66,9 @@ class LinkedInPostsControllerTest {
     fun `createPost should return ErrorResponse when content is blank`() {
         // Given
         val content = "   "
+        LinkedInOAuthController.token = "test_token"
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost("test_token", content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -83,8 +84,9 @@ class LinkedInPostsControllerTest {
     fun `createPost should return ErrorResponse when content is empty`() {
         // Given
         val content = ""
+        LinkedInOAuthController.token = "test_token"
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost("test_token", content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)

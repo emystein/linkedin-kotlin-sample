@@ -10,9 +10,9 @@ interface LinkedInPostsService {
      * Create a text-only post on LinkedIn using the Posts API
      * Automatically retrieves the current user's URN and uses it as the author
      *
-     * @param token The access token
+     * @param token The access token (non-null)
      * @param content The text content of the post
      * @return PostCreationResponse with post details or ErrorResponse if failed
      */
-    fun createPost(token: String?, content: String?): Any
+    fun createPost(token: String, content: String?): Any
 }

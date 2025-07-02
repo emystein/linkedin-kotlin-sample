@@ -1,5 +1,6 @@
 package com.example.api
 
+import com.example.api.dto.ErrorResponse
 import com.example.api.service.LinkedInProfileService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -26,6 +27,9 @@ class LinkedInProfileController {
     @RequestMapping(value = ["/info"])
     fun getProfileInfo(): Any {
         val token = LinkedInOAuthController.token
+        if (token == null) {
+            return ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        }
         return linkedInProfileService.getProfileInfo(token)
     }
 
@@ -41,6 +45,9 @@ class LinkedInProfileController {
     @RequestMapping(value = ["/person-urn"])
     fun getPersonUrn(): Any {
         val token = LinkedInOAuthController.token
+        if (token == null) {
+            return ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        }
         return linkedInProfileService.getPersonUrn(token)
     }
 
@@ -52,6 +59,9 @@ class LinkedInProfileController {
     @RequestMapping(value = ["/organization-urns"])
     fun getOrganizationUrns(): Any {
         val token = LinkedInOAuthController.token
+        if (token == null) {
+            return ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        }
         return linkedInProfileService.getOrganizationUrns(token)
     }
 

@@ -1,5 +1,6 @@
 package com.example.api
 
+import com.example.api.dto.ErrorResponse
 import com.example.api.service.LinkedInPostsService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -27,6 +28,9 @@ class LinkedInPostsController {
     @RequestMapping(value = ["/create"])
     fun createPost(@RequestParam(required = false) content: String?): Any {
         val token = LinkedInOAuthController.token
+        if (token == null) {
+            return ErrorResponse("no_token", "No access token available. Please generate a token first.")
+        }
         return linkedInPostsService.createPost(token, content)
     }
 

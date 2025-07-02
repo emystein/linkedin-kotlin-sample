@@ -27,15 +27,11 @@ class LinkedInPostsServiceImpl : LinkedInPostsService {
      * Create a text-only post on LinkedIn using the Posts API
      * Automatically retrieves the current user's URN and uses it as the author
      *
-     * @param token The access token
+     * @param token The access token (non-null)
      * @param content The text content of the post
      * @return Response from the LinkedIn Posts API
      */
-    override fun createPost(token: String?, content: String?): Any {
-        if (token == null) {
-            return ErrorResponse("no_token", "No access token available. Please generate a token first.")
-        }
-
+    override fun createPost(token: String, content: String?): Any {
         if (content.isNullOrBlank()) {
             return ErrorResponse("empty_content", "Post content cannot be empty.")
         }
