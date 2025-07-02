@@ -9,8 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInProfileClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.logging.Level
-import java.util.logging.Logger
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Service implementation for LinkedIn Profile API operations
@@ -22,7 +21,7 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     @Autowired
     private lateinit var linkedInProfileClient: LinkedInProfileClient
 
-    private val logger = Logger.getLogger(LinkedInProfileServiceImpl::class.java.name)
+    private val logger = KotlinLogging.logger {}
     private val objectMapper = ObjectMapper()
 
     /**
@@ -42,7 +41,7 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
             val response = linkedInProfileClient.getUserInfo("Bearer $token")
             return objectMapper.readValue(response, ProfileInfoResponse::class.java)
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, "Error retrieving profile info", e)
+            logger.error(e) { "Error retrieving profile info" }
             return ErrorResponse("profile_error", "Failed to process profile data: ${e.message}")
         }
     }
@@ -76,7 +75,7 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
                 return ErrorResponse("missing_sub", "Could not extract 'sub' field from profile response")
             }
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, "Error extracting person URN", e)
+            logger.error(e) { "Error extracting person URN" }
             return ErrorResponse("urn_extraction_error", "Failed to process profile data: ${e.message}")
         }
     }
@@ -96,7 +95,7 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
             val response = linkedInProfileClient.getOrganizationAccess("Bearer $token")
             return objectMapper.readValue(response, OrganizationAccessResponse::class.java)
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, "Error retrieving organization access", e)
+            logger.error(e) { "Error retrieving organization access" }
             return ErrorResponse("organization_access_error", "Failed to retrieve organization access: ${e.message}")
         }
     }
@@ -111,10 +110,10 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     override fun getCurrentUserUrn(token: String): String {
         try {
             // Call the userinfo endpoint to get user information
-            logger.info("Making request to LinkedIn userinfo API")
+            logger.info { "Making request to LinkedIn userinfo API" }
 
             val response = linkedInProfileClient.getUserInfo("Bearer $token")
-            logger.info("Response body: $response")
+            logger.info { "Response body: $response" }
 
             // Parse the response to extract the 'sub' field
             val profileInfo = objectMapper.readValue(response, ProfileInfoResponse::class.java)
@@ -126,8 +125,7 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
                 return "{\"error\": \"Could not extract 'sub' field from userinfo response\"}"
             }
         } catch (e: Exception) {
-            logger.severe("Error retrieving user URN: ${e.message}")
-            e.printStackTrace()
+            logger.error(e) { "Error retrieving user URN: ${e.message}" }
             return "{\"error\": \"Failed to retrieve user URN: ${e.message?.replace("\"", "\\\"")}\"}"
         }
     }

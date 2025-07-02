@@ -7,8 +7,7 @@ import com.linkedin.api.client.LinkedInPostsClient
 import com.linkedin.api.dto.LinkedInPostRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.logging.Level
-import java.util.logging.Logger
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Service implementation for LinkedIn Posts API operations
@@ -23,7 +22,7 @@ class LinkedInPostsServiceImpl : LinkedInPostsService {
     @Autowired
     private lateinit var linkedInProfileService: LinkedInProfileService
 
-    private val logger = Logger.getLogger(LinkedInPostsServiceImpl::class.java.name)
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Create a text-only post on LinkedIn using the Posts API
@@ -77,7 +76,7 @@ class LinkedInPostsServiceImpl : LinkedInPostsService {
             }
 
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, "Error creating post", e)
+            logger.error(e) { "Error creating post" }
             return ErrorResponse("post_creation_error", "Failed to create post: ${e.message}")
         }
     }

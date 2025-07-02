@@ -26,8 +26,7 @@ import org.springframework.web.servlet.view.RedirectView
 
 import java.io.IOException
 import java.util.*
-import java.util.logging.Level
-import java.util.logging.Logger
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /*
  * Getting Started with LinkedIn's OAuth APIs ,
@@ -73,7 +72,7 @@ class LinkedInOAuthController {
     var refresh_token: String? = null
     lateinit var service: LinkedInOAuthService
 
-    private val logger = Logger.getLogger(LinkedInOAuthController::class.java.name)
+    private val logger = KotlinLogging.logger {}
     private val objectMapper = ObjectMapper()
 
     /**
@@ -101,7 +100,7 @@ class LinkedInOAuthController {
         val redirectView = RedirectView()
 
         if (code != null && code.isNotEmpty()) {
-            logger.log(Level.INFO, "Authorization code not empty, trying to generate a 3-legged OAuth token.")
+            logger.info { "Authorization code not empty, trying to generate a 3-legged OAuth token." }
 
             val accessToken = arrayOf(AccessToken())
             val request = service.getAccessToken3Legged(code)
@@ -113,7 +112,7 @@ class LinkedInOAuthController {
             token = accessToken[0].accessToken
             refresh_token = accessToken[0].refreshToken
 
-            logger.log(Level.INFO, "Generated Access token and Refresh Token.")
+            logger.info { "Generated Access token and Refresh Token." }
 
             redirectView.url = clientUrl
         } else {
@@ -148,7 +147,7 @@ class LinkedInOAuthController {
             token = accessToken[0].accessToken
         }
 
-        logger.log(Level.INFO, "Generated Access token.")
+        logger.info { "Generated Access token." }
 
         redirectView.url = clientUrl
         return redirectView
@@ -166,7 +165,7 @@ class LinkedInOAuthController {
             try {
                 val request = service.introspectToken(token ?: "")
                 val response = getRestTemplate().postForObject(TOKEN_INTROSPECTION_URL, request, String::class.java)
-                logger.log(Level.INFO, "Token introspected. Details are {0}", response)
+                logger.info { "Token introspected. Details are $response" }
 
                 if (response != null) {
                     objectMapper.readValue(response, TokenIntrospectionResponse::class.java)
@@ -174,7 +173,7 @@ class LinkedInOAuthController {
                     ErrorResponse("empty_response", "Empty response from token introspection API")
                 }
             } catch (e: Exception) {
-                logger.log(Level.SEVERE, "Error during token introspection", e)
+                logger.error(e) { "Error during token introspection" }
                 ErrorResponse("introspection_error", "Failed to introspect token: ${e.message}")
             }
         } else {
@@ -195,7 +194,7 @@ class LinkedInOAuthController {
                 val refreshTokenCopy = refresh_token ?: ""
                 val request = service.getAccessTokenFromRefreshToken(refreshTokenCopy)
                 val response = getRestTemplate().postForObject(REQUEST_TOKEN_URL, request, String::class.java)
-                logger.log(Level.INFO, "Used Refresh Token to generate a new access token successfully.")
+                logger.info { "Used Refresh Token to generate a new access token successfully." }
 
                 if (response != null) {
                     val refreshTokenResponse = objectMapper.readValue(response, RefreshTokenResponse::class.java)
@@ -207,11 +206,11 @@ class LinkedInOAuthController {
                     ErrorResponse("empty_response", "Empty response from refresh token API")
                 }
             } catch (e: Exception) {
-                logger.log(Level.SEVERE, "Error during token refresh", e)
+                logger.error(e) { "Error during token refresh" }
                 ErrorResponse("refresh_error", "Failed to refresh token: ${e.message}")
             }
         } else {
-            logger.log(Level.INFO, "Refresh Token cannot be empty. Generate 3L Access Token and Retry again.")
+            logger.info { "Refresh Token cannot be empty. Generate 3L Access Token and Retry again." }
             ErrorResponse("missing_refresh_token", "Refresh Token cannot be empty. Generate 3L Access Token and Retry again.")
         }
     }
@@ -259,7 +258,7 @@ class LinkedInOAuthController {
                 // you might want to handle pagination differently
                 firstPageResponse
             } catch (parseException: Exception) {
-                logger.log(Level.WARNING, "Could not parse response as structured data, returning raw response", parseException)
+                logger.warn(parseException) { "Could not parse response as structured data, returning raw response" }
                 // If parsing fails, return a generic response with the raw data
                 // This handles cases where the API response format might be different
                 MemberConnectionsResponse(
@@ -270,7 +269,7 @@ class LinkedInOAuthController {
             }
 
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, "Error retrieving member connections", e)
+            logger.error(e) { "Error retrieving member connections" }
             return ErrorResponse("api_error", "Failed to retrieve member connections: ${e.message}")
         }
     }

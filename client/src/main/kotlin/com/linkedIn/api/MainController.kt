@@ -37,8 +37,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.client.RestTemplate
-import java.util.logging.Level
-import java.util.logging.Logger
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Main controller called by spring-boot to handle OAuth actions at
@@ -53,7 +52,7 @@ class MainController {
         return builder.build()
     }
 
-    private val logger = Logger.getLogger(MainController::class.java.name)
+    private val logger = KotlinLogging.logger {}
 
     @Value("\${SERVER_URL}")
     private lateinit var SERVER_URL: String
@@ -72,7 +71,7 @@ class MainController {
         var token = ""
         try {
             response = restTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
-            logger.log(Level.INFO, "Validating if a token is already in session. Response from token introspection end point is: {0}", response)
+            logger.info { "Validating if a token is already in session. Response from token introspection end point is: $response" }
 
             if (!response.lowercase().contains("error")) {
                 action = TOKEN_EXISTS_MESSAGE
@@ -81,13 +80,13 @@ class MainController {
                 // Get the token if it exists
                 try {
                     token = restTemplate.getForObject(SERVER_URL + GET_TOKEN_ENDPOINT, String::class.java) ?: ""
-                    logger.log(Level.INFO, "Retrieved token: {0}", token)
+                    logger.info { "Retrieved token: $token" }
                 } catch (e: Exception) {
-                    logger.log(Level.SEVERE, "Error retrieving token: {0}", e.message)
+                    logger.error(e) { "Error retrieving token: ${e.message}" }
                 }
             }
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
         }
 
         model.addAttribute("auth_url", SERVER_URL + THREE_LEGGED_TOKEN_GEN_ENDPOINT)
@@ -95,7 +94,7 @@ class MainController {
         model.addAttribute("action", action)
         model.addAttribute("token", token)
 
-        logger.log(Level.INFO, "Completed execution for rendering OAuth page. The model values are output: {0}, action: {1}, token: {2}.", arrayOf(output, action, token))
+        logger.info { "Completed execution for rendering OAuth page. The model values are output: $output, action: $action, token: $token." }
         return OAUTH_PAGE
     }
 
@@ -122,9 +121,9 @@ class MainController {
         if (shouldFetchToken) {
             try {
                 token = restTemplate.getForObject(SERVER_URL + GET_TOKEN_ENDPOINT, String::class.java) ?: ""
-                logger.log(Level.INFO, "Retrieved token: {0}", token)
+                logger.info { "Retrieved token: $token" }
             } catch (e: Exception) {
-                logger.log(Level.SEVERE, "Error retrieving token: {0}", e.message)
+                logger.error(e) { "Error retrieving token: ${e.message}" }
             }
         }
 
@@ -133,7 +132,7 @@ class MainController {
         model.addAttribute("action", action)
         model.addAttribute("token", token)
 
-        logger.log(Level.INFO, "Completed execution. The output is {0}, token: {1}", arrayOf(response, token))
+        logger.info { "Completed execution. The output is $response, token: $token" }
         return token
     }
 
@@ -145,7 +144,7 @@ class MainController {
      */
     @PostMapping("/twoLeggedAuth")
     fun handleTwoLeggedAuth(model: Model): String {
-        logger.log(Level.INFO, "Handling 2-legged OAuth token generation")
+        logger.info { "Handling 2-legged OAuth token generation" }
 
         var response = ""
         val action = ACTION_2_LEGGED_TOKEN_GEN
@@ -154,7 +153,7 @@ class MainController {
             restTemplate.getForObject(SERVER_URL + TWO_LEGGED_TOKEN_GEN_ENDPOINT, String::class.java)
             response = TWO_LEGGED_TOKEN_GEN_SUCCESS_MESSAGE
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
@@ -170,7 +169,7 @@ class MainController {
      */
     @PostMapping("/profile")
     fun handleGetProfile(model: Model): String {
-        logger.log(Level.INFO, "Handling profile retrieval")
+        logger.info { "Handling profile retrieval" }
 
         var response = ""
         val action = ACTION_GET_PROFILE
@@ -178,7 +177,7 @@ class MainController {
         try {
             response = restTemplate.getForObject(SERVER_URL + PROFILE_ENDPOINT, String::class.java)!!
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
@@ -194,7 +193,7 @@ class MainController {
      */
     @PostMapping("/refreshToken")
     fun handleRefreshToken(model: Model): String {
-        logger.log(Level.INFO, "Handling refresh token operation")
+        logger.info { "Handling refresh token operation" }
 
         var response = ""
         val action = ACTION_USE_REFRESH_TOKEN
@@ -209,7 +208,7 @@ class MainController {
                 REFRESH_TOKEN_MESSAGE
             }
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
@@ -225,7 +224,7 @@ class MainController {
      */
     @PostMapping("/memberConnections")
     fun handleGetMemberConnections(model: Model): String {
-        logger.log(Level.INFO, "Handling member connections retrieval")
+        logger.info { "Handling member connections retrieval" }
 
         var response = ""
         val action = ACTION_GET_MEMBER_CONNECTIONS
@@ -234,7 +233,7 @@ class MainController {
             response = restTemplate.getForObject(SERVER_URL + MEMBER_CONNECTIONS_ENDPOINT, String::class.java)!!
             response = MEMBER_CONNECTIONS_MESSAGE + response
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
@@ -251,7 +250,7 @@ class MainController {
      */
     @PostMapping("/createPost")
     fun handleCreatePost(@RequestParam("post_content", required = false) postContent: String?, model: Model): String {
-        logger.log(Level.INFO, "Handling post creation with content: {0}", postContent)
+        logger.info { "Handling post creation with content: $postContent" }
 
         var response = ""
         val action = ACTION_CREATE_POST
@@ -266,7 +265,7 @@ class MainController {
                 response = "Error: Post content cannot be empty."
             }
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
@@ -282,7 +281,7 @@ class MainController {
      */
     @PostMapping("/getPersonUrn")
     fun handleGetPersonUrn(model: Model): String {
-        logger.log(Level.INFO, "Handling person URN retrieval")
+        logger.info { "Handling person URN retrieval" }
 
         var response = ""
         val action = ACTION_GET_PERSON_URN
@@ -291,7 +290,7 @@ class MainController {
             response = restTemplate.getForObject(SERVER_URL + GET_PERSON_URN_ENDPOINT, String::class.java)!!
             response = PERSON_URN_MESSAGE + response
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
@@ -307,7 +306,7 @@ class MainController {
      */
     @PostMapping("/getOrganizationUrns")
     fun handleGetOrganizationUrns(model: Model): String {
-        logger.log(Level.INFO, "Handling organization URNs retrieval")
+        logger.info { "Handling organization URNs retrieval" }
 
         var response = ""
         val action = ACTION_GET_ORGANIZATION_URNS
@@ -316,7 +315,7 @@ class MainController {
             response = restTemplate.getForObject(SERVER_URL + GET_ORGANIZATION_URNS_ENDPOINT, String::class.java)!!
             response = ORGANIZATION_URNS_MESSAGE + response
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
@@ -332,7 +331,7 @@ class MainController {
      */
     @PostMapping("/tokenIntrospection")
     fun handleTokenIntrospection(model: Model): String {
-        logger.log(Level.INFO, "Handling token introspection")
+        logger.info { "Handling token introspection" }
 
         var response = ""
         val action = ACTION_TOKEN_INTROSPECTION
@@ -340,7 +339,7 @@ class MainController {
         try {
             response = restTemplate.getForObject(SERVER_URL + TOKEN_INTROSPECTION_ENDPOINT, String::class.java)!!
         } catch (e: Exception) {
-            logger.log(Level.SEVERE, e.message, e)
+            logger.error(e) { e.message }
             response = GENERIC_ERROR_MESSAGE
         }
 
