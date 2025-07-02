@@ -25,7 +25,8 @@ class LinkedInProfileController {
      */
     @RequestMapping(value = ["/info"])
     fun getProfileInfo(): Any {
-        return linkedInProfileService.getProfileInfo()
+        val token = LinkedInOAuthController.token
+        return linkedInProfileService.getProfileInfo(token)
     }
 
     /**
@@ -39,7 +40,8 @@ class LinkedInProfileController {
      */
     @RequestMapping(value = ["/person-urn"])
     fun getPersonUrn(): Any {
-        return linkedInProfileService.getPersonUrn()
+        val token = LinkedInOAuthController.token
+        return linkedInProfileService.getPersonUrn(token)
     }
 
     /**
@@ -49,7 +51,8 @@ class LinkedInProfileController {
      */
     @RequestMapping(value = ["/organization-urns"])
     fun getOrganizationUrns(): Any {
-        return linkedInProfileService.getOrganizationUrns()
+        val token = LinkedInOAuthController.token
+        return linkedInProfileService.getOrganizationUrns(token)
     }
 
     /**

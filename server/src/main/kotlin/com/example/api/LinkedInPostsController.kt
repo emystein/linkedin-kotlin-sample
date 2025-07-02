@@ -26,7 +26,8 @@ class LinkedInPostsController {
      */
     @RequestMapping(value = ["/create"])
     fun createPost(@RequestParam(required = false) content: String?): Any {
-        return linkedInPostsService.createPost(content)
+        val token = LinkedInOAuthController.token
+        return linkedInPostsService.createPost(token, content)
     }
 
 

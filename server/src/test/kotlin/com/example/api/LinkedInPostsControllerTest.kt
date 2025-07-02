@@ -33,7 +33,7 @@ class LinkedInPostsControllerTest {
         // Given
         val content = "Test post content"
         val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
-        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -50,7 +50,7 @@ class LinkedInPostsControllerTest {
         // Given
         val content: String? = null
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -67,7 +67,7 @@ class LinkedInPostsControllerTest {
         // Given
         val content = "   "
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -84,7 +84,7 @@ class LinkedInPostsControllerTest {
         // Given
         val content = ""
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost(content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost(null, content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)

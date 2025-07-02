@@ -1,6 +1,5 @@
 package com.example.api.service
 
-import com.example.api.LinkedInOAuthController
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.PostCreationResponse
 import com.linkedin.api.client.LinkedInPostsClient
@@ -28,11 +27,11 @@ class LinkedInPostsServiceImpl : LinkedInPostsService {
      * Create a text-only post on LinkedIn using the Posts API
      * Automatically retrieves the current user's URN and uses it as the author
      *
+     * @param token The access token
      * @param content The text content of the post
      * @return Response from the LinkedIn Posts API
      */
-    override fun createPost(content: String?): Any {
-        val token = LinkedInOAuthController.token
+    override fun createPost(token: String?, content: String?): Any {
         if (token == null) {
             return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }

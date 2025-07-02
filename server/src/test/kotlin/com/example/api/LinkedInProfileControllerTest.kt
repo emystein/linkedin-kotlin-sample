@@ -33,7 +33,7 @@ class LinkedInProfileControllerTest {
     fun `getProfileInfo should return ErrorResponse when service returns error`() {
         // Given
         val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
-        `when`(linkedInProfileService.getProfileInfo()).thenReturn(expectedError)
+        `when`(linkedInProfileService.getProfileInfo(null)).thenReturn(expectedError)
 
         // When
         val result = controller.getProfileInfo()
@@ -49,7 +49,7 @@ class LinkedInProfileControllerTest {
     fun `getPersonUrn should return ErrorResponse when service returns error`() {
         // Given
         val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
-        `when`(linkedInProfileService.getPersonUrn()).thenReturn(expectedError)
+        `when`(linkedInProfileService.getPersonUrn(null)).thenReturn(expectedError)
 
         // When
         val result = controller.getPersonUrn()
@@ -64,7 +64,7 @@ class LinkedInProfileControllerTest {
     fun `getOrganizationUrns should return ErrorResponse when service returns error`() {
         // Given
         val expectedError = ErrorResponse("no_token", "No access token available. Please generate a token first.")
-        `when`(linkedInProfileService.getOrganizationUrns()).thenReturn(expectedError)
+        `when`(linkedInProfileService.getOrganizationUrns(null)).thenReturn(expectedError)
 
         // When
         val result = controller.getOrganizationUrns()

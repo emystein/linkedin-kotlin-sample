@@ -1,6 +1,5 @@
 package com.example.api.service
 
-import com.example.api.LinkedInOAuthController
 import com.example.api.dto.ErrorResponse
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,11 +12,11 @@ class LinkedInPostsServiceImplTest {
     @Test
     fun `createPost should return ErrorResponse when token is null`() {
         // Given
-        LinkedInOAuthController.token = null
+        val token: String? = null
         val content = "Test post content"
 
         // When
-        val result = service.createPost(content)
+        val result = service.createPost(token, content)
 
         // Then
         assertTrue(result is ErrorResponse)
@@ -29,11 +28,11 @@ class LinkedInPostsServiceImplTest {
     @Test
     fun `createPost should return ErrorResponse when content is null`() {
         // Given
-        LinkedInOAuthController.token = "test_token"
+        val token = "test_token"
         val content: String? = null
 
         // When
-        val result = service.createPost(content)
+        val result = service.createPost(token, content)
 
         // Then
         assertTrue(result is ErrorResponse)
@@ -45,11 +44,11 @@ class LinkedInPostsServiceImplTest {
     @Test
     fun `createPost should return ErrorResponse when content is blank`() {
         // Given
-        LinkedInOAuthController.token = "test_token"
+        val token = "test_token"
         val content = "   "
 
         // When
-        val result = service.createPost(content)
+        val result = service.createPost(token, content)
 
         // Then
         assertTrue(result is ErrorResponse)
@@ -61,11 +60,11 @@ class LinkedInPostsServiceImplTest {
     @Test
     fun `createPost should return ErrorResponse when content is empty`() {
         // Given
-        LinkedInOAuthController.token = "test_token"
+        val token = "test_token"
         val content = ""
 
         // When
-        val result = service.createPost(content)
+        val result = service.createPost(token, content)
 
         // Then
         assertTrue(result is ErrorResponse)

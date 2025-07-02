@@ -1,6 +1,5 @@
 package com.example.api.service
 
-import com.example.api.LinkedInOAuthController
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.OrganizationAccessResponse
 import com.example.api.dto.PersonUrnResponse
@@ -29,10 +28,10 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
      * as described in the LinkedIn OpenID Connect documentation
      * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
      *
+     * @param token The access token
      * @return Public profile of user including the 'sub' field
      */
-    override fun getProfileInfo(): Any {
-        val token = LinkedInOAuthController.token
+    override fun getProfileInfo(token: String?): Any {
         if (token == null) {
             return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }
@@ -53,11 +52,12 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
      *
      * This method reuses the getProfileInfo() response to extract the 'sub' field
      *
+     * @param token The access token
      * @return The Person URN in the format urn:li:person:{sub}
      */
-    override fun getPersonUrn(): Any {
+    override fun getPersonUrn(token: String?): Any {
         // Get the profile data from the getProfileInfo() method
-        val profileResponse = getProfileInfo()
+        val profileResponse = getProfileInfo(token)
 
         // Check if there was an error getting the profile
         if (profileResponse is ErrorResponse) {
@@ -83,10 +83,10 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     /**
      * Get the Organization URNs that the authenticated user has access to
      *
+     * @param token The access token
      * @return A list of Organization URNs in the format urn:li:organization:{id}
      */
-    override fun getOrganizationUrns(): Any {
-        val token = LinkedInOAuthController.token
+    override fun getOrganizationUrns(token: String?): Any {
         if (token == null) {
             return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }

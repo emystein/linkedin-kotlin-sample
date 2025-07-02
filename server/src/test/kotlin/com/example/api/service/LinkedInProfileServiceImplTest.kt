@@ -36,10 +36,10 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getProfileInfo should return ErrorResponse when token is null`() {
         // Given
-        LinkedInOAuthController.token = null
+        val token: String? = null
 
         // When
-        val result = service.getProfileInfo()
+        val result = service.getProfileInfo(token)
 
         // Then
         assertTrue(result is ErrorResponse)
@@ -51,12 +51,12 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getProfileInfo should return ProfileInfoResponse when successful`() {
         // Given
-        LinkedInOAuthController.token = "valid_token"
+        val token = "valid_token"
         val mockResponse = """{"sub":"123456","name":"John Doe","email":"john@example.com"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
         // When
-        val result = service.getProfileInfo()
+        val result = service.getProfileInfo(token)
 
         // Then
         assertTrue(result is ProfileInfoResponse)
@@ -69,12 +69,12 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getPersonUrn should return PersonUrnResponse when successful`() {
         // Given
-        LinkedInOAuthController.token = "valid_token"
+        val token = "valid_token"
         val mockResponse = """{"sub":"123456","name":"John Doe"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
         // When
-        val result = service.getPersonUrn()
+        val result = service.getPersonUrn(token)
 
         // Then
         assertTrue(result is PersonUrnResponse)
@@ -85,12 +85,12 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getPersonUrn should return ErrorResponse when sub is missing`() {
         // Given
-        LinkedInOAuthController.token = "valid_token"
+        val token = "valid_token"
         val mockResponse = """{"name":"John Doe"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
         // When
-        val result = service.getPersonUrn()
+        val result = service.getPersonUrn(token)
 
         // Then
         assertTrue(result is ErrorResponse)
@@ -101,10 +101,10 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getOrganizationUrns should return ErrorResponse when token is null`() {
         // Given
-        LinkedInOAuthController.token = null
+        val token: String? = null
 
         // When
-        val result = service.getOrganizationUrns()
+        val result = service.getOrganizationUrns(token)
 
         // Then
         assertTrue(result is ErrorResponse)
