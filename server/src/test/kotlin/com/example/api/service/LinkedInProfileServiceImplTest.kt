@@ -41,27 +41,23 @@ class LinkedInProfileServiceImplTest {
         val result = service.getProfileInfo(token)
 
         // Then
-        assertTrue(result is ProfileInfoResponse)
-        val profileResponse = result as ProfileInfoResponse
+        val profileResponse = result
         assertEquals("123456", profileResponse.sub)
         assertEquals("John Doe", profileResponse.name)
         assertEquals("john@example.com", profileResponse.email)
     }
 
     @Test
-    fun `getProfileInfo should return ErrorResponse when API call fails`() {
+    fun `getProfileInfo should throw Exception when API call fails`() {
         // Given
         val token = AccessToken("invalid_token")
         `when`(linkedInProfileClient.getUserInfo("Bearer invalid_token")).thenThrow(RuntimeException("API Error"))
 
-        // When
-        val result = service.getProfileInfo(token)
-
-        // Then
-        assertTrue(result is ErrorResponse)
-        val errorResponse = result as ErrorResponse
-        assertEquals("profile_error", errorResponse.error)
-        assertTrue(errorResponse.message!!.contains("Failed to process profile data"))
+        // When & Then
+        val exception = assertThrows(RuntimeException::class.java) {
+            service.getProfileInfo(token)
+        }
+        assertEquals("API Error", exception.message)
     }
 
     @Test
@@ -75,41 +71,35 @@ class LinkedInProfileServiceImplTest {
         val result = service.getPersonUrn(token)
 
         // Then
-        assertTrue(result is PersonUrnResponse)
-        val urnResponse = result as PersonUrnResponse
+        val urnResponse = result
         assertEquals("urn:li:person:123456", urnResponse.personUrn)
     }
 
     @Test
-    fun `getPersonUrn should return ErrorResponse when sub is missing`() {
+    fun `getPersonUrn should throw Exception when sub is missing`() {
         // Given
         val token = AccessToken("valid_token")
         val mockResponse = """{"name":"John Doe"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
-        // When
-        val result = service.getPersonUrn(token)
-
-        // Then
-        assertTrue(result is ErrorResponse)
-        val errorResponse = result as ErrorResponse
-        assertEquals("missing_sub", errorResponse.error)
+        // When & Then
+        val exception = assertThrows(Exception::class.java) {
+            service.getPersonUrn(token)
+        }
+        assertEquals("Could not extract 'sub' field from profile response", exception.message)
     }
 
     @Test
-    fun `getOrganizationUrns should return ErrorResponse when API call fails`() {
+    fun `getOrganizationUrns should throw Exception when API call fails`() {
         // Given
         val token = AccessToken("invalid_token")
         `when`(linkedInProfileClient.getOrganizationAccess("Bearer invalid_token")).thenThrow(RuntimeException("API Error"))
 
-        // When
-        val result = service.getOrganizationUrns(token)
-
-        // Then
-        assertTrue(result is ErrorResponse)
-        val errorResponse = result as ErrorResponse
-        assertEquals("organization_access_error", errorResponse.error)
-        assertTrue(errorResponse.message!!.contains("Failed to retrieve organization access"))
+        // When & Then
+        val exception = assertThrows(RuntimeException::class.java) {
+            service.getOrganizationUrns(token)
+        }
+        assertEquals("API Error", exception.message)
     }
 
     @Test
@@ -164,6 +154,6 @@ class LinkedInProfileServiceImplTest {
         val result = service.getOrganizationUrns(token)
 
         // Then
-        assertTrue(result is OrganizationAccessResponse)
+        assertNotNull(result)
     }
 }

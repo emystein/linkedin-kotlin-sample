@@ -1,5 +1,8 @@
 package com.example.api.service
 
+import com.example.api.dto.OrganizationAccessResponse
+import com.example.api.dto.PersonUrnResponse
+import com.example.api.dto.ProfileInfoResponse
 import com.example.common.AccessToken
 
 interface LinkedInProfileService {
@@ -9,7 +12,7 @@ interface LinkedInProfileService {
      * @param token The access token
      * @return ProfileInfoResponse with user profile data or ErrorResponse if failed
      */
-    fun getProfileInfo(token: AccessToken): Any
+    fun getProfileInfo(token: AccessToken): ProfileInfoResponse
 
     /**
      * Get the Person URN for the authenticated user
@@ -17,7 +20,7 @@ interface LinkedInProfileService {
      * @param token The access token
      * @return PersonUrnResponse with the user's URN or ErrorResponse if failed
      */
-    fun getPersonUrn(token: AccessToken): Any
+    fun getPersonUrn(token: AccessToken): PersonUrnResponse
 
     /**
      * Get the Organization URNs that the authenticated user has access to
@@ -25,7 +28,7 @@ interface LinkedInProfileService {
      * @param token The access token
      * @return OrganizationAccessResponse with organization data or ErrorResponse if failed
      */
-    fun getOrganizationUrns(token: AccessToken): Any
+    fun getOrganizationUrns(token: AccessToken): OrganizationAccessResponse
 
     /**
      * Helper method to get the current user's URN using the userinfo endpoint
