@@ -3,7 +3,7 @@ package com.example.api.service
 import com.example.api.dto.OrganizationAccessResponse
 import com.example.api.dto.PersonUrnResponse
 import com.example.api.dto.ProfileInfoResponse
-import com.example.common.AccessToken
+import com.example.server.common.AccessToken
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInProfileClient
 import io.github.oshai.kotlinlogging.KotlinLogging

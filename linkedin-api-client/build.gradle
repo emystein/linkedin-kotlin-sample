@@ -24,8 +24,8 @@ tasks.named('bootStartScripts') {
 }
 
 dependencies {
-    // Common module dependency
-    implementation project(':common')
+    // Server-common module dependency
+    implementation project(':server-common')
 
     // Spring Cloud OpenFeign for Feign clients
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'

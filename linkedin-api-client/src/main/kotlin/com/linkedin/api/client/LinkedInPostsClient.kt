@@ -1,6 +1,6 @@
 package com.linkedin.api.client
 
-import com.example.common.AccessToken
+import com.example.server.common.AccessToken
 import com.linkedin.api.dto.LinkedInPostRequest
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.PostMapping

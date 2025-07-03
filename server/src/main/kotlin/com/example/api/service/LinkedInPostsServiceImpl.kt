@@ -1,6 +1,6 @@
 package com.example.api.service
 
-import com.example.common.AccessToken
+import com.example.server.common.AccessToken
 import com.example.api.dto.PostCreationResponse
 import com.linkedin.api.client.LinkedInPostsClient
 import com.linkedin.api.client.createPost
