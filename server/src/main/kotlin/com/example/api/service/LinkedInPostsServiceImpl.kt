@@ -4,14 +4,10 @@ import com.example.api.dto.ErrorResponse
 import com.example.api.dto.PostCreationResponse
 import com.linkedin.api.client.LinkedInPostsClient
 import com.linkedin.api.dto.LinkedInPostRequest
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import io.github.oshai.kotlinlogging.KotlinLogging
 
-/**
- * Service implementation for LinkedIn Posts API operations
- * Contains the business logic extracted from LinkedInPostsController
- */
 @Service
 class LinkedInPostsServiceImpl : LinkedInPostsService {
 
@@ -23,14 +19,6 @@ class LinkedInPostsServiceImpl : LinkedInPostsService {
 
     private val logger = KotlinLogging.logger {}
 
-    /**
-     * Create a text-only post on LinkedIn using the Posts API
-     * Automatically retrieves the current user's URN and uses it as the author
-     *
-     * @param token The access token
-     * @param content The text content of the post
-     * @return Response from the LinkedIn Posts API
-     */
     override fun createPost(token: AccessToken, content: String?): Any {
         if (content.isNullOrBlank()) {
             return ErrorResponse("empty_content", "Post content cannot be empty.")

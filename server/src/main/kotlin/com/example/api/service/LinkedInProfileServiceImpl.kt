@@ -10,10 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-/**
- * Service implementation for LinkedIn Profile API operations
- * Contains the business logic extracted from LinkedInProfileController
- */
 @Service
 class LinkedInProfileServiceImpl : LinkedInProfileService {
 
@@ -23,14 +19,6 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     private val logger = KotlinLogging.logger {}
     private val objectMapper = ObjectMapper()
 
-    /**
-     * Make a Public profile request with LinkedIn API using the userinfo endpoint
-     * as described in the LinkedIn OpenID Connect documentation
-     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
-     *
-     * @param token The access token
-     * @return Public profile of user including the 'sub' field
-     */
     override fun getProfileInfo(token: AccessToken): Any {
         try {
             val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
@@ -41,21 +29,9 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
         }
     }
 
-    /**
-     * Get the Person URN for the authenticated user using the userinfo endpoint
-     * as described in the LinkedIn OpenID Connect documentation
-     * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
-     *
-     * This method reuses the getProfileInfo() response to extract the 'sub' field
-     *
-     * @param token The access token
-     * @return The Person URN in the format urn:li:person:{sub}
-     */
     override fun getPersonUrn(token: AccessToken): Any {
-        // Get the profile data from the getProfileInfo() method
         val profileResponse = getProfileInfo(token)
 
-        // Check if there was an error getting the profile
         if (profileResponse is ErrorResponse) {
             return profileResponse // Return the error response
         }
@@ -76,12 +52,6 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
         }
     }
 
-    /**
-     * Get the Organization URNs that the authenticated user has access to
-     *
-     * @param token The access token
-     * @return A list of Organization URNs in the format urn:li:organization:{id}
-     */
     override fun getOrganizationUrns(token: AccessToken): Any {
         try {
             val response = linkedInProfileClient.getOrganizationAccess("Bearer ${token.value}")
@@ -92,22 +62,13 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
         }
     }
 
-    /**
-     * Helper method to get the current user's URN using the userinfo endpoint
-     * This method is used by other controllers that need the user URN
-     *
-     * @param token The access token
-     * @return The user's URN in the format urn:li:person:{sub}
-     */
     override fun getCurrentUserUrn(token: AccessToken): String {
         try {
-            // Call the userinfo endpoint to get user information
             logger.info { "Making request to LinkedIn userinfo API" }
 
             val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
             logger.info { "Response body: $response" }
 
-            // Parse the response to extract the 'sub' field
             val profileInfo = objectMapper.readValue(response, ProfileInfoResponse::class.java)
             val sub = profileInfo.sub
 

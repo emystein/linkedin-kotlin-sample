@@ -1,11 +1,6 @@
 package com.example.api.service
 
-/**
- * Service interface for LinkedIn Profile API operations
- * Provides methods for retrieving user profile information, person URNs, and organization access
- */
 interface LinkedInProfileService {
-
     /**
      * Get public profile information using LinkedIn's userinfo endpoint
      *
