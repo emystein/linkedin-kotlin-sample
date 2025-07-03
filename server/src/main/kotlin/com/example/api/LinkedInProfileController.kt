@@ -1,6 +1,7 @@
 package com.example.api
 
 import com.example.api.dto.ErrorResponse
+import com.example.api.service.AccessToken
 import com.example.api.service.LinkedInProfileService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -30,7 +31,7 @@ class LinkedInProfileController {
         if (token == null) {
             return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }
-        return linkedInProfileService.getProfileInfo(token)
+        return linkedInProfileService.getProfileInfo(AccessToken(token))
     }
 
     /**
@@ -48,7 +49,7 @@ class LinkedInProfileController {
         if (token == null) {
             return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }
-        return linkedInProfileService.getPersonUrn(token)
+        return linkedInProfileService.getPersonUrn(AccessToken(token))
     }
 
     /**
@@ -62,7 +63,7 @@ class LinkedInProfileController {
         if (token == null) {
             return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }
-        return linkedInProfileService.getOrganizationUrns(token)
+        return linkedInProfileService.getOrganizationUrns(AccessToken(token))
     }
 
     /**
@@ -73,6 +74,6 @@ class LinkedInProfileController {
      * @return The user's URN in the format urn:li:person:{sub}
      */
     fun getCurrentUserUrn(token: String): String {
-        return linkedInProfileService.getCurrentUserUrn(token)
+        return linkedInProfileService.getCurrentUserUrn(AccessToken(token))
     }
 }

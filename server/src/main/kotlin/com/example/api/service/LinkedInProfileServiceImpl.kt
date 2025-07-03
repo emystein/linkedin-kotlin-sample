@@ -28,12 +28,12 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
      * as described in the LinkedIn OpenID Connect documentation
      * https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
      *
-     * @param token The access token (non-null)
+     * @param token The access token
      * @return Public profile of user including the 'sub' field
      */
-    override fun getProfileInfo(token: String): Any {
+    override fun getProfileInfo(token: AccessToken): Any {
         try {
-            val response = linkedInProfileClient.getUserInfo("Bearer $token")
+            val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
             return objectMapper.readValue(response, ProfileInfoResponse::class.java)
         } catch (e: Exception) {
             logger.error(e) { "Error retrieving profile info" }
@@ -48,10 +48,10 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
      *
      * This method reuses the getProfileInfo() response to extract the 'sub' field
      *
-     * @param token The access token (non-null)
+     * @param token The access token
      * @return The Person URN in the format urn:li:person:{sub}
      */
-    override fun getPersonUrn(token: String): Any {
+    override fun getPersonUrn(token: AccessToken): Any {
         // Get the profile data from the getProfileInfo() method
         val profileResponse = getProfileInfo(token)
 
@@ -79,12 +79,12 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     /**
      * Get the Organization URNs that the authenticated user has access to
      *
-     * @param token The access token (non-null)
+     * @param token The access token
      * @return A list of Organization URNs in the format urn:li:organization:{id}
      */
-    override fun getOrganizationUrns(token: String): Any {
+    override fun getOrganizationUrns(token: AccessToken): Any {
         try {
-            val response = linkedInProfileClient.getOrganizationAccess("Bearer $token")
+            val response = linkedInProfileClient.getOrganizationAccess("Bearer ${token.value}")
             return objectMapper.readValue(response, OrganizationAccessResponse::class.java)
         } catch (e: Exception) {
             logger.error(e) { "Error retrieving organization access" }
@@ -99,12 +99,12 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
      * @param token The access token
      * @return The user's URN in the format urn:li:person:{sub}
      */
-    override fun getCurrentUserUrn(token: String): String {
+    override fun getCurrentUserUrn(token: AccessToken): String {
         try {
             // Call the userinfo endpoint to get user information
             logger.info { "Making request to LinkedIn userinfo API" }
 
-            val response = linkedInProfileClient.getUserInfo("Bearer $token")
+            val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
             logger.info { "Response body: $response" }
 
             // Parse the response to extract the 'sub' field

@@ -2,6 +2,7 @@ package com.example.api
 
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.PostCreationResponse
+import com.example.api.service.AccessToken
 import com.example.api.service.LinkedInPostsService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,7 +51,7 @@ class LinkedInPostsControllerTest {
         val content: String? = null
         LinkedInOAuthController.token = "test_token"
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost("test_token", content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost(AccessToken("test_token"), content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -68,7 +69,7 @@ class LinkedInPostsControllerTest {
         val content = "   "
         LinkedInOAuthController.token = "test_token"
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost("test_token", content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost(AccessToken("test_token"), content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)
@@ -86,7 +87,7 @@ class LinkedInPostsControllerTest {
         val content = ""
         LinkedInOAuthController.token = "test_token"
         val expectedError = ErrorResponse("empty_content", "Post content cannot be empty.")
-        `when`(linkedInPostsService.createPost("test_token", content)).thenReturn(expectedError)
+        `when`(linkedInPostsService.createPost(AccessToken("test_token"), content)).thenReturn(expectedError)
 
         // When
         val result = controller.createPost(content)

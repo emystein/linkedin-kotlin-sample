@@ -27,11 +27,11 @@ class LinkedInPostsServiceImpl : LinkedInPostsService {
      * Create a text-only post on LinkedIn using the Posts API
      * Automatically retrieves the current user's URN and uses it as the author
      *
-     * @param token The access token (non-null)
+     * @param token The access token
      * @param content The text content of the post
      * @return Response from the LinkedIn Posts API
      */
-    override fun createPost(token: String, content: String?): Any {
+    override fun createPost(token: AccessToken, content: String?): Any {
         if (content.isNullOrBlank()) {
             return ErrorResponse("empty_content", "Post content cannot be empty.")
         }
@@ -51,7 +51,7 @@ class LinkedInPostsServiceImpl : LinkedInPostsService {
 
             // Make the POST request to LinkedIn Posts API using Feign client
             val response = linkedInPostsClient.createPost(
-                authorization = "Bearer $token",
+                authorization = "Bearer ${token.value}",
                 linkedInVersion = "202505",
                 protocolVersion = "2.0.0",
                 postRequest = postRequest

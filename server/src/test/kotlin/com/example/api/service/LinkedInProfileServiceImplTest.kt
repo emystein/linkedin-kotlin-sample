@@ -36,7 +36,7 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getProfileInfo should return ProfileInfoResponse when successful`() {
         // Given
-        val token = "valid_token"
+        val token = AccessToken("valid_token")
         val mockResponse = """{"sub":"123456","name":"John Doe","email":"john@example.com"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
@@ -54,7 +54,7 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getProfileInfo should return ErrorResponse when API call fails`() {
         // Given
-        val token = "invalid_token"
+        val token = AccessToken("invalid_token")
         `when`(linkedInProfileClient.getUserInfo("Bearer invalid_token")).thenThrow(RuntimeException("API Error"))
 
         // When
@@ -70,7 +70,7 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getPersonUrn should return PersonUrnResponse when successful`() {
         // Given
-        val token = "valid_token"
+        val token = AccessToken("valid_token")
         val mockResponse = """{"sub":"123456","name":"John Doe"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
@@ -86,7 +86,7 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getPersonUrn should return ErrorResponse when sub is missing`() {
         // Given
-        val token = "valid_token"
+        val token = AccessToken("valid_token")
         val mockResponse = """{"name":"John Doe"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
@@ -102,7 +102,7 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getOrganizationUrns should return ErrorResponse when API call fails`() {
         // Given
-        val token = "invalid_token"
+        val token = AccessToken("invalid_token")
         `when`(linkedInProfileClient.getOrganizationAccess("Bearer invalid_token")).thenThrow(RuntimeException("API Error"))
 
         // When
@@ -118,9 +118,9 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getCurrentUserUrn should return URN when successful`() {
         // Given
-        val token = "valid_token"
+        val token = AccessToken("valid_token")
         val mockResponse = """{"sub":"123456","name":"John Doe"}"""
-        `when`(linkedInProfileClient.getUserInfo("Bearer $token")).thenReturn(mockResponse)
+        `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
         // When
         val result = service.getCurrentUserUrn(token)
@@ -132,9 +132,9 @@ class LinkedInProfileServiceImplTest {
     @Test
     fun `getCurrentUserUrn should return error JSON when sub is missing`() {
         // Given
-        val token = "valid_token"
+        val token = AccessToken("valid_token")
         val mockResponse = """{"name":"John Doe"}"""
-        `when`(linkedInProfileClient.getUserInfo("Bearer $token")).thenReturn(mockResponse)
+        `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
         // When
         val result = service.getCurrentUserUrn(token)

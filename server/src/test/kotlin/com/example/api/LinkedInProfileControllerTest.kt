@@ -3,6 +3,7 @@ package com.example.api
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.PersonUrnResponse
 import com.example.api.dto.ProfileInfoResponse
+import com.example.api.service.AccessToken
 import com.example.api.service.LinkedInProfileService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -78,7 +79,7 @@ class LinkedInProfileControllerTest {
         // Given
         val invalidToken = "invalid_token"
         val expectedError = "{\"error\": \"Failed to retrieve user URN: Invalid token\"}"
-        `when`(linkedInProfileService.getCurrentUserUrn(invalidToken)).thenReturn(expectedError)
+        `when`(linkedInProfileService.getCurrentUserUrn(AccessToken(invalidToken))).thenReturn(expectedError)
 
         // When
         val result = controller.getCurrentUserUrn(invalidToken)

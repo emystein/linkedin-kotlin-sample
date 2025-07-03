@@ -12,7 +12,7 @@ class LinkedInPostsServiceImplTest {
     @Test
     fun `createPost should return ErrorResponse when content is null`() {
         // Given
-        val token = "test_token"
+        val token = AccessToken("test_token")
         val content: String? = null
 
         // When
@@ -28,7 +28,7 @@ class LinkedInPostsServiceImplTest {
     @Test
     fun `createPost should return ErrorResponse when content is blank`() {
         // Given
-        val token = "test_token"
+        val token = AccessToken("test_token")
         val content = "   "
 
         // When
@@ -44,7 +44,7 @@ class LinkedInPostsServiceImplTest {
     @Test
     fun `createPost should return ErrorResponse when content is empty`() {
         // Given
-        val token = "test_token"
+        val token = AccessToken("test_token")
         val content = ""
 
         // When
