@@ -17,4 +17,14 @@ data class PostCreationResponse(
     
     @JsonProperty("author")
     val author: String? = null
-)
+) {
+    companion object {
+        fun success(postId: String, author: String): PostCreationResponse {
+            return PostCreationResponse(true, "Post created successfully", postId, author)
+        }
+
+        fun failure(message: String): PostCreationResponse {
+            return PostCreationResponse(false, message)
+        }
+    }
+}

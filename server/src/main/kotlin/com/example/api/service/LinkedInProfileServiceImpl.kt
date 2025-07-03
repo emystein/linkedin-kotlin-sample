@@ -63,23 +63,14 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     }
 
     override fun getCurrentUserUrn(token: AccessToken): String {
-        try {
-            logger.info { "Making request to LinkedIn userinfo API" }
-
-            val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
-            logger.info { "Response body: $response" }
-
-            val profileInfo = objectMapper.readValue(response, ProfileInfoResponse::class.java)
-            val sub = profileInfo.sub
-
-            if (!sub.isNullOrEmpty()) {
-                return "urn:li:person:$sub"
-            } else {
-                return "{\"error\": \"Could not extract 'sub' field from userinfo response\"}"
-            }
-        } catch (e: Exception) {
-            logger.error(e) { "Error retrieving user URN: ${e.message}" }
-            return "{\"error\": \"Failed to retrieve user URN: ${e.message?.replace("\"", "\\\"")}\"}"
+        logger.info { "Making request to LinkedIn userinfo API" }
+        val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
+        val profileInfo = objectMapper.readValue(response, ProfileInfoResponse::class.java)
+        val sub = profileInfo.sub
+        if (!sub.isNullOrEmpty()) {
+            return "urn:li:person:$sub"
+        } else {
+            throw Exception("Could not extract 'sub' field from userinfo response")
         }
     }
 }

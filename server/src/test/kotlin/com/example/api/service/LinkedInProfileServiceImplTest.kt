@@ -1,16 +1,13 @@
 package com.example.api.service
 
-import com.example.api.LinkedInOAuthController
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.OrganizationAccessResponse
 import com.example.api.dto.PersonUrnResponse
 import com.example.api.dto.ProfileInfoResponse
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInProfileClient
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
@@ -21,7 +18,6 @@ class LinkedInProfileServiceImplTest {
     private lateinit var linkedInProfileClient: LinkedInProfileClient
 
     private lateinit var service: LinkedInProfileServiceImpl
-    private val objectMapper = ObjectMapper()
 
     @BeforeEach
     fun setUp() {
@@ -130,17 +126,43 @@ class LinkedInProfileServiceImplTest {
     }
 
     @Test
-    fun `getCurrentUserUrn should return error JSON when sub is missing`() {
+    fun `getCurrentUserUrn should throw Exception when sub is missing`() {
         // Given
         val token = AccessToken("valid_token")
         val mockResponse = """{"name":"John Doe"}"""
         `when`(linkedInProfileClient.getUserInfo("Bearer valid_token")).thenReturn(mockResponse)
 
+        // When & Then
+        val exception = assertThrows(Exception::class.java) {
+            service.getCurrentUserUrn(token)
+        }
+        assertEquals("Could not extract 'sub' field from userinfo response", exception.message)
+    }
+
+    @Test
+    fun `getCurrentUserUrn should throw Exception when API call fails`() {
+        // Given
+        val token = AccessToken("invalid_token")
+        `when`(linkedInProfileClient.getUserInfo("Bearer invalid_token")).thenThrow(RuntimeException("API Error"))
+
+        // When & Then
+        val exception = assertThrows(RuntimeException::class.java) {
+            service.getCurrentUserUrn(token)
+        }
+        assertEquals("API Error", exception.message)
+    }
+
+    @Test
+    fun `getOrganizationUrns should return OrganizationAccessResponse when successful`() {
+        // Given
+        val token = AccessToken("valid_token")
+        val mockResponse = """{"elements":[{"organization~":{"id":"123","localizedName":"Test Org"}}]}"""
+        `when`(linkedInProfileClient.getOrganizationAccess("Bearer valid_token")).thenReturn(mockResponse)
+
         // When
-        val result = service.getCurrentUserUrn(token)
+        val result = service.getOrganizationUrns(token)
 
         // Then
-        assertTrue(result.contains("error"))
-        assertTrue(result.contains("Could not extract 'sub' field"))
+        assertTrue(result is OrganizationAccessResponse)
     }
 }
