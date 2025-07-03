@@ -6,6 +6,9 @@ bootJar {
 }
 
 dependencies {
+    // Common module dependency
+    implementation project(':common')
+
     // LinkedIn API Client module dependency
     implementation project(':linkedin-api-client')
 

@@ -1,5 +1,6 @@
 package com.example.api.service
 
+import com.example.common.AccessToken
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.OrganizationAccessResponse
 import com.example.api.dto.PersonUrnResponse

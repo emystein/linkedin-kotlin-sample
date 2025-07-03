@@ -1,7 +1,7 @@
 package com.example.api
 
+import com.example.common.AccessToken
 import com.example.api.dto.ErrorResponse
-import com.example.api.service.AccessToken
 import com.example.api.service.LinkedInPostsService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping

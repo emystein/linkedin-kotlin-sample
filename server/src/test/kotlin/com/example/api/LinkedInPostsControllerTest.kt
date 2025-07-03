@@ -1,8 +1,8 @@
 package com.example.api
 
+import com.example.common.AccessToken
 import com.example.api.dto.ErrorResponse
 import com.example.api.dto.PostCreationResponse
-import com.example.api.service.AccessToken
 import com.example.api.service.LinkedInPostsService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals

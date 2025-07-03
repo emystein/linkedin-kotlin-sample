@@ -17,11 +17,15 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'org.springframework.boot'
-    apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'application'
     apply plugin: 'org.jetbrains.kotlin.jvm'
-    apply plugin: 'org.jetbrains.kotlin.plugin.spring'
+
+    // Apply Spring Boot plugins only to non-common modules
+    if (project.name != 'common') {
+        apply plugin: 'org.springframework.boot'
+        apply plugin: 'io.spring.dependency-management'
+        apply plugin: 'application'
+        apply plugin: 'org.jetbrains.kotlin.plugin.spring'
+    }
 
     java {
         toolchain {
@@ -50,37 +54,43 @@ subprojects {
         test.java.srcDirs += 'src/test/java'
     }
 
-    dependencyManagement {
-        imports {
-            mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.3'
+    // Apply dependency management only to non-common modules
+    if (project.name != 'common') {
+        dependencyManagement {
+            imports {
+                mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.3'
+            }
         }
     }
 
     dependencies {
-        // Common dependencies for all subprojects
-        implementation 'org.springframework.boot:spring-boot-starter-web'
-        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-        implementation 'org.springframework:spring-core'
-        implementation 'com.fasterxml.jackson.core:jackson-databind'
-        implementation 'com.fasterxml.jackson.core:jackson-core'
-
-        // Feign dependencies
-        implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-        implementation 'io.github.openfeign:feign-jackson'
-        implementation 'io.github.openfeign:feign-slf4j'
-        implementation 'io.github.openfeign.form:feign-form-spring:3.8.0'
-
-        // Kotlin dependencies
+        // Kotlin dependencies for all projects
         implementation 'org.jetbrains.kotlin:kotlin-reflect'
         implementation 'org.jetbrains.kotlin:kotlin-stdlib'
-        implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 
-        // Kotlin Logging
-        implementation 'io.github.oshai:kotlin-logging-jvm:7.0.0'
+        // Spring dependencies only for non-common modules
+        if (project.name != 'common') {
+            implementation 'org.springframework.boot:spring-boot-starter-web'
+            implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+            implementation 'org.springframework:spring-core'
+            implementation 'com.fasterxml.jackson.core:jackson-databind'
+            implementation 'com.fasterxml.jackson.core:jackson-core'
 
-        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+            // Feign dependencies
+            implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+            implementation 'io.github.openfeign:feign-jackson'
+            implementation 'io.github.openfeign:feign-slf4j'
+            implementation 'io.github.openfeign.form:feign-form-spring:3.8.0'
 
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+            implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+
+            // Kotlin Logging
+            implementation 'io.github.oshai:kotlin-logging-jvm:7.0.0'
+
+            developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+            testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        }
     }
 
     tasks.named('test') {

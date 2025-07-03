@@ -24,21 +24,24 @@ tasks.named('bootStartScripts') {
 }
 
 dependencies {
+    // Common module dependency
+    implementation project(':common')
+
     // Spring Cloud OpenFeign for Feign clients
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'io.github.openfeign:feign-jackson'
     implementation 'io.github.openfeign:feign-slf4j'
     implementation 'io.github.openfeign.form:feign-form-spring:3.8.0'
-    
+
     // Jackson for JSON processing
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
-    
+
     // Spring Boot dependencies
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework:spring-context'
-    
+
     // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

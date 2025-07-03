@@ -1,5 +1,7 @@
 package com.example.api.service
 
+import com.example.common.AccessToken
+
 interface LinkedInProfileService {
     /**
      * Get public profile information using LinkedIn's userinfo endpoint
