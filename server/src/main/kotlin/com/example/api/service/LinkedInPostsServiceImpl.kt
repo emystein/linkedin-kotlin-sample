@@ -11,7 +11,7 @@ class LinkedInPostsServiceImpl(
     private val linkedInPostsClient: LinkedInPostsClient,
     private val linkedInProfileService: LinkedInProfileService,
 ) : LinkedInPostsService {
-    override fun createPost(token: AccessToken, content: String?): Any {
+    override fun createPost(token: AccessToken, content: String?): PostCreationResponse {
         if (content.isNullOrBlank()) {
             throw IllegalArgumentException("Post content cannot be empty.")
         }

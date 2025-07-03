@@ -32,7 +32,13 @@ class LinkedInPostsController {
         if (token == null) {
             return ErrorResponse("no_token", "No access token available. Please generate a token first.")
         }
-        return linkedInPostsService.createPost(AccessToken(token), content)
+        return try {
+            linkedInPostsService.createPost(AccessToken(token), content)
+        } catch (e: IllegalArgumentException) {
+            ErrorResponse("invalid_content", e.message ?: "Invalid content provided")
+        } catch (e: Exception) {
+            ErrorResponse("service_error", e.message ?: "An error occurred while creating the post")
+        }
     }
 
 
