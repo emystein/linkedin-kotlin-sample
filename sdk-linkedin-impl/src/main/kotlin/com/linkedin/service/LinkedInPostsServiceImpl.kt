@@ -1,7 +1,6 @@
-package com.example.api.service
+package com.linkedin.service
 
 import com.example.server.common.AccessToken
-import com.example.api.dto.PostCreationResponse
 import com.linkedin.api.client.LinkedInPostsClient
 import com.linkedin.api.client.createPost
 import org.springframework.stereotype.Service

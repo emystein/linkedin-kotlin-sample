@@ -1,4 +1,4 @@
-package com.example.api.dto
+package com.example.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -9,10 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class ErrorResponse(
     @JsonProperty("error")
     val error: String,
-    
+
     @JsonProperty("message")
     val message: String? = null,
-    
+
     @JsonProperty("timestamp")
     val timestamp: Long = System.currentTimeMillis()
 )

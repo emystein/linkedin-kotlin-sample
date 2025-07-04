@@ -1,8 +1,8 @@
 package com.example.api
 
 import com.example.server.common.AccessToken
-import com.example.api.dto.ErrorResponse
-import com.example.api.service.LinkedInProfileService
+import com.example.api.ErrorResponse
+import com.linkedin.service.LinkedInProfileService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController

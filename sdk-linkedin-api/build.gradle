@@ -1,0 +1,16 @@
+description = 'LinkedIn SDK API - Interfaces and Data Classes'
+
+dependencies {
+    // Server-common module dependency for AccessToken
+    implementation project(':server-common')
+
+    // Jackson dependencies for JSON serialization/deserialization
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2'
+
+    // Test dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.mockito:mockito-core:5.3.1'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
+}

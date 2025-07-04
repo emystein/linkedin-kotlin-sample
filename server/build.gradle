@@ -12,6 +12,10 @@ dependencies {
     // LinkedIn API Client module dependency
     implementation project(':linkedin-api-client')
 
+    // LinkedIn SDK modules
+    implementation project(':sdk-linkedin-api')
+    implementation project(':sdk-linkedin-impl')
+
     // Server-specific dependencies can be added here
 }
 

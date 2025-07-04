@@ -1,6 +1,15 @@
 package com.example.api.dto
 
+import com.example.api.ErrorResponse
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.example.api.ConnectionData
+import com.example.api.MemberConnectionsResponse
+import com.linkedin.service.PersonUrnResponse
+import com.linkedin.service.PostCreationResponse
+import com.linkedin.service.ProfileInfoResponse
+import com.example.api.RefreshTokenResponse
+import com.example.api.TokenIntrospectionResponse
+import com.example.api.TokenResponse
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull

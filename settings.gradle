@@ -1,2 +1,2 @@
 rootProject.name = 'linkedin-kotlin-sample'
-include 'server-common', 'client', 'server', 'linkedin-api-client'
+include 'server-common', 'client', 'server', 'linkedin-api-client', 'sdk-linkedin-api', 'sdk-linkedin-impl'

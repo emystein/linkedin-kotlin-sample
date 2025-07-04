@@ -1,10 +1,8 @@
 package com.example.api
 
 import com.example.server.common.AccessToken
-import com.example.api.dto.ErrorResponse
-import com.example.api.dto.PersonUrnResponse
-import com.example.api.dto.ProfileInfoResponse
-import com.example.api.service.LinkedInProfileService
+import com.example.api.ErrorResponse
+import com.linkedin.service.LinkedInProfileService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

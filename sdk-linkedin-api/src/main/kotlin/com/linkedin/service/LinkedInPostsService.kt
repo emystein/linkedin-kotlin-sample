@@ -1,6 +1,5 @@
-package com.example.api.service
+package com.linkedin.service
 
-import com.example.api.dto.PostCreationResponse
 import com.example.server.common.AccessToken
 
 interface LinkedInPostsService {

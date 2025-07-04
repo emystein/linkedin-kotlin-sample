@@ -1,8 +1,5 @@
-package com.example.api.service
+package com.linkedin.service
 
-import com.example.api.dto.OrganizationAccessResponse
-import com.example.api.dto.PersonUrnResponse
-import com.example.api.dto.ProfileInfoResponse
 import com.example.server.common.AccessToken
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInProfileClient

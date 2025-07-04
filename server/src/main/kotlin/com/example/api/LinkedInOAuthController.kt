@@ -1,6 +1,5 @@
 package com.example.api
 
-import com.example.api.dto.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInDataPortabilityClient
 import com.linkedin.oauth.builder.ScopeBuilder
@@ -252,7 +251,10 @@ class LinkedInOAuthController {
                 MemberConnectionsResponse(
                     data = emptyList(),
                     paging = null,
-                    metadata = mapOf("raw_response" to response, "parse_error" to (parseException.message ?: "Unknown parsing error"))
+                    metadata = mapOf(
+                        "raw_response" to response,
+                        "parse_error" to (parseException.message ?: "Unknown parsing error")
+                    )
                 )
             }
 

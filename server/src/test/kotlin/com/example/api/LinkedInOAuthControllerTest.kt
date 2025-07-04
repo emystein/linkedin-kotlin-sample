@@ -1,10 +1,7 @@
 package com.example.api
 
-import com.example.api.dto.ErrorResponse
-import com.example.api.dto.TokenResponse
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 
 class LinkedInOAuthControllerTest {

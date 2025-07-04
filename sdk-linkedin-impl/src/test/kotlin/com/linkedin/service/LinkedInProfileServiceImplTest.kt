@@ -1,10 +1,6 @@
-package com.example.api.service
+package com.linkedin.service
 
 import com.example.server.common.AccessToken
-import com.example.api.dto.ErrorResponse
-import com.example.api.dto.OrganizationAccessResponse
-import com.example.api.dto.PersonUrnResponse
-import com.example.api.dto.ProfileInfoResponse
 import com.linkedin.api.client.LinkedInProfileClient
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach

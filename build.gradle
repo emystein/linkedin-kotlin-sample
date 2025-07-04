@@ -19,11 +19,17 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'org.jetbrains.kotlin.jvm'
 
-    // Apply Spring Boot plugins only to non-server-common modules
-    if (project.name != 'server-common') {
+    // Apply Spring Boot plugins only to modules that need them
+    if (project.name != 'server-common' && project.name != 'sdk-linkedin-api' && project.name != 'sdk-linkedin-impl') {
         apply plugin: 'org.springframework.boot'
         apply plugin: 'io.spring.dependency-management'
         apply plugin: 'application'
+        apply plugin: 'org.jetbrains.kotlin.plugin.spring'
+    }
+
+    // Apply only dependency management to sdk-linkedin-impl (no Spring Boot)
+    if (project.name == 'sdk-linkedin-impl') {
+        apply plugin: 'io.spring.dependency-management'
         apply plugin: 'org.jetbrains.kotlin.plugin.spring'
     }
 
@@ -54,8 +60,8 @@ subprojects {
         test.java.srcDirs += 'src/test/java'
     }
 
-    // Apply dependency management only to non-server-common modules
-    if (project.name != 'server-common') {
+    // Apply dependency management to modules that need it
+    if (project.name != 'server-common' && project.name != 'sdk-linkedin-api') {
         dependencyManagement {
             imports {
                 mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.3'
@@ -68,8 +74,8 @@ subprojects {
         implementation 'org.jetbrains.kotlin:kotlin-reflect'
         implementation 'org.jetbrains.kotlin:kotlin-stdlib'
 
-        // Spring dependencies only for non-server-common modules
-        if (project.name != 'server-common') {
+        // Spring dependencies only for modules that need them
+        if (project.name != 'server-common' && project.name != 'sdk-linkedin-api' && project.name != 'sdk-linkedin-impl') {
             implementation 'org.springframework.boot:spring-boot-starter-web'
             implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
             implementation 'org.springframework:spring-core'
