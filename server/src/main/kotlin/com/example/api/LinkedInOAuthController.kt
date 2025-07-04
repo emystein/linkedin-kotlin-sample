@@ -1,32 +1,23 @@
 package com.example.api
 
-import com.example.api.dto.ErrorResponse
-import com.example.api.dto.MemberConnectionsResponse
-import com.example.api.dto.RefreshTokenResponse
-import com.example.api.dto.TokenIntrospectionResponse
-import com.example.api.dto.TokenResponse
+import com.example.api.dto.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInDataPortabilityClient
-import com.linkedin.api.client.LinkedInGenericClient
-import org.springframework.boot.web.client.RestTemplateBuilder
 import com.linkedin.oauth.builder.ScopeBuilder
 import com.linkedin.oauth.pojo.AccessToken
 import com.linkedin.oauth.service.LinkedInOAuthService
 import com.linkedin.oauth.util.Constants.REQUEST_TOKEN_URL
 import com.linkedin.oauth.util.Constants.TOKEN_INTROSPECTION_URL
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.view.RedirectView
-
 import java.io.IOException
 import java.util.*
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 /*
  * Getting Started with LinkedIn's OAuth APIs ,
@@ -41,9 +32,6 @@ class LinkedInOAuthController {
 
     @Autowired
     private lateinit var linkedInDataPortabilityClient: LinkedInDataPortabilityClient
-
-    @Autowired
-    private lateinit var linkedInGenericClient: LinkedInGenericClient
 
     private fun getRestTemplate(): org.springframework.web.client.RestTemplate {
         return restTemplateBuilder.build()
