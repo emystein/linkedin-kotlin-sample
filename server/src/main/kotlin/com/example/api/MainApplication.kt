@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan
 
 @SpringBootApplication
 @EnableFeignClients(basePackages = ["com.linkedin.api.client"])
-@ComponentScan(basePackages = ["com.example.api", "com.linkedin.api.config"])
+@ComponentScan(basePackages = ["com.example.api", "com.linkedin.api.config", "com.linkedin.service"])
 class MainApplication {
     companion object {
         @JvmStatic
