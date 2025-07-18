@@ -4,6 +4,9 @@ dependencies {
     // Server-common module dependency for AccessToken
     implementation project(':server-common')
 
+    // LinkedIn API client module dependency for response types
+    implementation project(':linkedin-api-client')
+
     // Jackson dependencies for JSON serialization/deserialization
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'

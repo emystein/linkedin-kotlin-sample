@@ -6,7 +6,7 @@ import com.example.api.ConnectionData
 import com.example.api.MemberConnectionsResponse
 import com.linkedin.service.PersonUrnResponse
 import com.linkedin.service.PostCreationResponse
-import com.linkedin.service.ProfileInfoResponse
+import com.linkedin.api.client.ProfileInfoResponse
 import com.example.api.RefreshTokenResponse
 import com.example.api.TokenIntrospectionResponse
 import com.example.api.TokenResponse

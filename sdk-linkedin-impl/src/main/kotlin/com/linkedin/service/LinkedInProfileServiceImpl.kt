@@ -1,8 +1,9 @@
 package com.linkedin.service
 
 import com.example.server.common.AccessToken
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.api.client.LinkedInProfileClient
+import com.linkedin.api.client.ProfileInfoResponse
+import com.linkedin.api.client.OrganizationAccessResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -14,11 +15,9 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     private lateinit var linkedInProfileClient: LinkedInProfileClient
 
     private val logger = KotlinLogging.logger {}
-    private val objectMapper = ObjectMapper()
 
     override fun getProfileInfo(token: AccessToken): ProfileInfoResponse {
-        val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
-        return objectMapper.readValue(response, ProfileInfoResponse::class.java)
+        return linkedInProfileClient.getUserInfo("Bearer ${token.value}")
     }
 
     override fun getPersonUrn(token: AccessToken): PersonUrnResponse {
@@ -33,14 +32,12 @@ class LinkedInProfileServiceImpl : LinkedInProfileService {
     }
 
     override fun getOrganizationUrns(token: AccessToken): OrganizationAccessResponse {
-        val response = linkedInProfileClient.getOrganizationAccess("Bearer ${token.value}")
-        return objectMapper.readValue(response, OrganizationAccessResponse::class.java)
+        return linkedInProfileClient.getOrganizationAccess("Bearer ${token.value}")
     }
 
     override fun getCurrentUserUrn(token: AccessToken): String {
         logger.info { "Making request to LinkedIn userinfo API" }
-        val response = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
-        val profileInfo = objectMapper.readValue(response, ProfileInfoResponse::class.java)
+        val profileInfo = linkedInProfileClient.getUserInfo("Bearer ${token.value}")
         val sub = profileInfo.sub
         if (!sub.isNullOrEmpty()) {
             return "urn:li:person:$sub"

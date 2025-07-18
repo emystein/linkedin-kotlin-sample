@@ -1,4 +1,4 @@
-package com.linkedin.service
+package com.linkedin.api.client
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -10,13 +10,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class PagingInfo(
     @JsonProperty("count")
     val count: Int? = null,
-    
+
     @JsonProperty("start")
     val start: Int? = null,
-    
+
     @JsonProperty("total")
     val total: Int? = null,
-    
+
     @JsonProperty("links")
     val links: List<PagingLink>? = null
 )
@@ -28,7 +28,7 @@ data class PagingInfo(
 data class PagingLink(
     @JsonProperty("rel")
     val rel: String? = null,
-    
+
     @JsonProperty("href")
     val href: String? = null
 )

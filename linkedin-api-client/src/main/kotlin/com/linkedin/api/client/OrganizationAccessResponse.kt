@@ -1,4 +1,4 @@
-package com.linkedin.service
+package com.linkedin.api.client
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class OrganizationAccessResponse(
     @JsonProperty("elements")
     val elements: List<OrganizationElement>? = null,
-    
+
     @JsonProperty("paging")
     val paging: PagingInfo? = null
 )
@@ -22,10 +22,10 @@ data class OrganizationAccessResponse(
 data class OrganizationElement(
     @JsonProperty("organization")
     val organization: OrganizationInfo? = null,
-    
+
     @JsonProperty("role")
     val role: String? = null,
-    
+
     @JsonProperty("state")
     val state: String? = null
 )
@@ -37,10 +37,10 @@ data class OrganizationElement(
 data class OrganizationInfo(
     @JsonProperty("id")
     val id: String? = null,
-    
+
     @JsonProperty("localizedName")
     val localizedName: String? = null,
-    
+
     @JsonProperty("vanityName")
     val vanityName: String? = null
 )

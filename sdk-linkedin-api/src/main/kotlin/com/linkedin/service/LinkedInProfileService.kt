@@ -1,6 +1,8 @@
 package com.linkedin.service
 
 import com.example.server.common.AccessToken
+import com.linkedin.api.client.ProfileInfoResponse
+import com.linkedin.api.client.OrganizationAccessResponse
 
 interface LinkedInProfileService {
     /**
